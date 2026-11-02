@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge, Button, Offcanvas } from 'react-bootstrap'
 import { fetchPlaceDetail } from '../api/client'
 import { exposure, exposureLabel, whyText } from '../lib/advice'
-import { useAppStore } from '../store/useAppStore'
+import { useFavorites } from '../hooks/useFavorites'
 import { ErrorAlert, Loading } from './Status'
 
 const cache = new Map() // 같은 장소를 다시 열 때 서버를 또 부르지 않도록
@@ -11,7 +11,7 @@ const KIND = { tour: '명소', food: '맛집' }
 // 카드를 눌렀을 때 열리는 장소 상세: 사진 갤러리, 소개, 이용 정보, 그리고 "왜 추천했는지"
 // sel: { place, kind } — place 는 useNearby 의 항목(+ e: 바람 노출도)
 export default function PlaceDetailPanel({ sel, show, wind, placement, onHide }) {
-  const addFavorite = useAppStore((s) => s.addFavorite)
+  const { isFav, toggle } = useFavorites()
   const place = sel?.place
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -96,9 +96,9 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
             )}
 
             <div className="d-flex flex-wrap gap-2 mb-3">
-              <Button size="sm" variant="outline-primary" disabled={place.sample}
-                onClick={() => addFavorite({ source: 'tour', id: place.id, title: place.title })}>
-                <i className="bi bi-star me-1" />즐겨찾기
+              <Button size="sm" variant={isFav('tour', place.id) ? 'primary' : 'outline-primary'} disabled={place.sample}
+                onClick={() => toggle({ source: 'tour', id: place.id, title: place.title })}>
+                <i className={`bi bi-star${isFav('tour', place.id) ? '-fill' : ''} me-1`} />{isFav('tour', place.id) ? '저장됨' : '즐겨찾기'}
               </Button>
               <Button size="sm" variant="outline-secondary" href={route} target="_blank" rel="noopener noreferrer">
                 <i className="bi bi-signpost-split me-1" />길찾기

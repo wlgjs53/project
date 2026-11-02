@@ -5,7 +5,7 @@ import { ErrorAlert, Loading } from './Status'
 
 // 국가유산 상세: 공식 설명문과 사진 갤러리 (국가유산청 오픈API)
 // item: 목록 항목 { name, kind, city, kdcd, ctcd, asno, image }
-export default function HeritageModal({ item, onHide, onSave }) {
+export default function HeritageModal({ item, saved = false, onHide, onSave }) {
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -68,7 +68,9 @@ export default function HeritageModal({ item, onHide, onSave }) {
         <p className="small text-muted mb-0 mt-3">출처: 국가유산청 국가유산 오픈API</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="outline-primary" onClick={() => onSave?.(item)}><i className="bi bi-star me-1" />즐겨찾기</Button>
+        <Button variant={saved ? 'primary' : 'outline-primary'} onClick={() => onSave?.(item)}>
+          <i className={`bi bi-star${saved ? '-fill' : ''} me-1`} />{saved ? '저장됨' : '즐겨찾기'}
+        </Button>
         <Button variant="secondary" onClick={onHide}>닫기</Button>
       </Modal.Footer>
     </Modal>

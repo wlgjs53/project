@@ -4,12 +4,12 @@ import PageHeader from '../components/PageHeader'
 import ItemCard from '../components/ItemCard'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchPlaces } from '../api/client'
-import { useAppStore } from '../store/useAppStore'
+import { useFavorites } from '../hooks/useFavorites'
 
 const TYPES = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 39: '음식점' }
 
 export default function Places() {
-  const addFavorite = useAppStore((s) => s.addFavorite)   // STEP 5에서 사용
+  const { isFav, toggle } = useFavorites()                 // 저장 여부 + 저장/삭제
   const [keyword, setKeyword] = useState('')             // 비워 두고 입력창의 예시 문구(placeholder)만 보여 준다
   const [type, setType] = useState('12')
   const [places, setPlaces] = useState([])               // ① 데이터
@@ -44,7 +44,7 @@ export default function Places() {
           {places.map((p) => (
             <Col key={p.id}>
               <ItemCard title={p.title} subtitle={p.addr} image={p.image} badge={TYPES[p.type]}
-                onSave={() => addFavorite({ source: 'tour', id: p.id, title: p.title })} />
+                saved={isFav('tour', p.id)} onSave={() => toggle({ source: 'tour', id: p.id, title: p.title })} />
             </Col>
           ))}
         </Row>

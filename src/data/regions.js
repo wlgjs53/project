@@ -5,7 +5,7 @@ import { llToXZ } from '../lib/geo'
 const r = (id, name, tier, lat, lng) => ({ id, name, tier, lat, lng, ...llToXZ(lat, lng) })
 
 export const REGIONS = [
-  r('jeju', '제주시', 'major', 33.4996, 126.5312),
+  r('jeju', '제주시', 'major', 33.49, 126.488), // 시내 중심에서 서쪽으로 옮겨 둠 — 칠머리당 핀과 글자가 겹치지 않도록
   r('seogwipo', '서귀포시', 'major', 33.2541, 126.5601),
   r('halla', '한라산', 'major', 33.3617, 126.5292),
   r('hallim', '한림', 'minor', 33.4136, 126.2663),

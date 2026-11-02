@@ -5,10 +5,10 @@ import ItemCard from '../components/ItemCard'
 import HeritageModal from '../components/HeritageModal'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchHeritage } from '../api/client'
-import { useAppStore } from '../store/useAppStore'
+import { useFavorites } from '../hooks/useFavorites'
 
 export default function Heritage() {
-  const addFavorite = useAppStore((s) => s.addFavorite)
+  const { isFav, toggle } = useFavorites()
   const [keyword, setKeyword] = useState('')         // 비워 두고 입력창의 예시 문구(placeholder)만 보여 준다
   const [list, setList] = useState([])
   const [featured, setFeatured] = useState(null)     // 이 사이트의 주제인 영등굿을 맨 위에 항상 소개
@@ -28,7 +28,8 @@ export default function Heritage() {
     fetchHeritage('영등').then((l) => setFeatured(l[0] ?? null)).catch(() => {})
   }, [])
 
-  const save = (h) => addFavorite({ source: 'heritage', id: h.name, title: h.name })
+  const save = (h) => toggle({ source: 'heritage', id: h.name, title: h.name })
+  const saved = (h) => isFav('heritage', h.name)
 
   return (
     <>
@@ -47,7 +48,9 @@ export default function Heritage() {
                 {featured.summary && <Card.Text>{featured.summary}</Card.Text>}
                 <div className="mt-auto d-flex gap-2">
                   <Button size="sm" onClick={() => setOpen(featured)}><i className="bi bi-card-text me-1" />공식 설명·사진 보기</Button>
-                  <Button size="sm" variant="outline-primary" onClick={() => save(featured)}><i className="bi bi-star me-1" />즐겨찾기</Button>
+                  <Button size="sm" variant={saved(featured) ? 'primary' : 'outline-primary'} onClick={() => save(featured)}>
+                    <i className={`bi bi-star${saved(featured) ? '-fill' : ''} me-1`} />{saved(featured) ? '저장됨' : '즐겨찾기'}
+                  </Button>
                 </div>
               </Card.Body>
             </Col>
@@ -68,13 +71,13 @@ export default function Heritage() {
           {list.map((h) => (
             <Col key={h.asno || h.name}>
               <ItemCard title={h.name} subtitle={h.city} badge={h.kind} image={h.image} description={h.summary}
-                onOpen={() => setOpen(h)} onSave={() => save(h)} />
+                onOpen={() => setOpen(h)} saved={saved(h)} onSave={() => save(h)} />
             </Col>
           ))}
         </Row>
       )}
 
-      <HeritageModal item={open} onHide={() => setOpen(null)} onSave={save} />
+      <HeritageModal item={open} saved={open ? saved(open) : false} onHide={() => setOpen(null)} onSave={save} />
     </>
   )
 }

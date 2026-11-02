@@ -55,7 +55,7 @@ export default function Home() {
     }
   }, [live])
   const isLive = !!live && live.speed === wind.speed && live.dir === wind.dir
-  const windTag = isLive ? `기상청 단기예보 · ${live.place}` : live ? '체험 모드' : '샘플 데이터'
+  const windTag = isLive ? `기상청 단기예보 · ${live.label}` : live ? '체험 모드' : '샘플 데이터'
 
   // 영등 여정 3곳 주변의 명소·맛집 (TourAPI, 실패 시 자리표시)
   const nearby = useNearby(STOPS)
@@ -115,7 +115,8 @@ export default function Home() {
 
   return (
     <div className="w-home">
-      <WindScene wind={wind} markers={markers} focus={focus} labels={labelsOn} onPickMarker={pickMarker} onPickStop={pickStop} />
+      <WindScene wind={wind} stations={isLive ? live.stations : null} markers={markers} focus={focus} labels={labelsOn}
+        onPickMarker={pickMarker} onPickStop={pickStop} />
       <WindMeter wind={wind} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
       <div className="w-tools">
         <button type="button" className={`w-btn${labelsOn ? ' on' : ''}`} onClick={() => setLabelsOn((v) => !v)} title="지도의 지명(제주시·서귀포시 등) 표시">
@@ -130,8 +131,8 @@ export default function Home() {
 
       <div className="w-story">
         <StorySection cam="0,26,50, 0,0,-2">
-          <span className="eyebrow">제주 문화 IP × 공공데이터 × three.js</span>
           <h1>영등할망의<br />바람길</h1>
+          <p className="tagline">오늘의 바람 따라 걷는 영등할망의 길, 길목의 명소와 맛집 안내</p>
           <p>음력 2월, 바람의 신 영등할망이 제주에 들어와 보름 가까이 머물며 바다에 씨를 뿌리고 떠난다고 전해집니다. 지금 이 섬 위를 지나는 바람을 따라 그 여정을 걸어 보세요.</p>
           {yd.intro && <p className="gold">{yd.intro}</p>}
           <p className="hint">↓ SCROLL</p>

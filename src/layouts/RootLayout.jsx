@@ -1,11 +1,17 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Container, Nav, Navbar, Toast, ToastContainer } from 'react-bootstrap'
 import { NAV_ITEMS } from '../router'
+import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
 
 export default function RootLayout() {
   const toasts = useAppStore((s) => s.toasts)
   const nickname = useAppStore((s) => s.nickname)
+  const loadFavorites = useAppStore((s) => s.loadFavorites)
+
+  // 어느 페이지에서든 별 모양(저장됨)을 맞게 그리도록, 처음과 닉네임이 바뀔 때 즐겨찾기를 불러 둔다
+  useEffect(() => { if (isSupabaseReady) loadFavorites() }, [nickname, loadFavorites])
   const isHome = useLocation().pathname === '/'   // 홈은 3D 전체 화면이라 컨테이너·푸터 없음
 
   return (

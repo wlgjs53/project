@@ -35,13 +35,37 @@ export const useAppStore = create(
         if (error) return get().toast(error.message, 'danger')
         set({ favorites: data })
       },
+      // 이 항목이 즐겨찾기에 있는지 (별 모양을 채울지 정할 때 씀)
+      isFavorite: (source, id) => get().favorites.some((f) => f.source === source && f.item_id === String(id)),
       addFavorite: async ({ source, id, title }) => {
         if (!supabase) return get().toast('Supabase 설정(.env.local)이 필요해요', 'warning')
-        const row = { nickname: get().nickname || '익명', source, item_id: String(id), title }
-        const { data, error } = await supabase.from('favorites').insert(row).select().single()
-        if (error) return get().toast(error.message, 'danger')
+        const nickname = get().nickname || '익명'
+        const itemId = String(id)
+        // 같은 항목을 두 번 저장하지 않도록 서버에서도 확인 (다른 탭·기기에서 저장했거나 목록을 아직 안 불러왔을 수 있음)
+        const dup = await supabase.from('favorites').select('id').eq('nickname', nickname).eq('source', source).eq('item_id', itemId).limit(1)
+        if (dup.error) return get().toast(dup.error.message, 'danger')
+        if (dup.data.length) {
+          await get().loadFavorites()
+          return get().toast('이미 즐겨찾기에 있어요', 'info')
+        }
+        const { data, error } = await supabase.from('favorites').insert({ nickname, source, item_id: itemId, title }).select().single()
+        if (error) return get().toast(error.code === '23505' ? '이미 즐겨찾기에 있어요' : error.message, error.code === '23505' ? 'info' : 'danger')
         set({ favorites: [data, ...get().favorites] })
         get().toast('즐겨찾기에 저장했어요')
+      },
+      // 즐겨찾기에서 빼기. 테이블에 delete 정책이 없으면 행이 안 지워지므로(오류 없이 0건) 반환 행 수로 확인한다.
+      removeFavorite: async (fav) => {
+        if (!supabase) return get().toast('Supabase 설정(.env.local)이 필요해요', 'warning')
+        const { data, error } = await supabase.from('favorites').delete().eq('id', fav.id).select()
+        if (error) return get().toast(error.message, 'danger')
+        if (!data?.length) return get().toast('삭제하지 못했어요 — Supabase 에 favorites delete 정책이 필요해요', 'danger')
+        set({ favorites: get().favorites.filter((f) => f.id !== fav.id) })
+        get().toast('즐겨찾기에서 뺐어요')
+      },
+      // 별을 누를 때: 이미 있으면 빼고, 없으면 저장
+      toggleFavorite: async ({ source, id, title }) => {
+        const found = get().favorites.find((f) => f.source === source && f.item_id === String(id))
+        return found ? get().removeFavorite(found) : get().addFavorite({ source, id, title })
       },
 
       // ④ STEP 6: 에이전트 대화 — 페이지를 옮겨도 대화가 남도록 store 에 둡니다

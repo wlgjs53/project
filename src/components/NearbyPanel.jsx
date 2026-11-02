@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ADVICE, exposureLabel, rankPlaces, windLevel } from '../lib/advice'
-import { useAppStore } from '../store/useAppStore'
+import { useFavorites } from '../hooks/useFavorites'
 
 const TABS = [
   { key: 'tour', label: '명소', icon: 'geo-alt' },
@@ -12,7 +12,7 @@ const TABS = [
 // onSelect(place, kind): 카드를 눌렀을 때 — 상세 패널과 3D 지도가 반응한다
 export default function NearbyPanel({ data, wind, selectedId, onSelect }) {
   const [tab, setTab] = useState('tour')
-  const addFavorite = useAppStore((s) => s.addFavorite)
+  const { isFav, toggle } = useFavorites()
 
   const list = useMemo(
     () => rankPlaces(data[tab], wind.speed, wind.dir, tab === 'food').slice(0, 4),
@@ -49,10 +49,11 @@ export default function NearbyPanel({ data, wind, selectedId, onSelect }) {
                     {p.thumb || p.image
                       ? <img src={p.thumb || p.image} alt={p.title} loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                       : <i className="bi bi-image" />}
-                    <button type="button" className="w-star" disabled={p.sample} aria-label="즐겨찾기"
-                      title={p.sample ? '실제 데이터에서만 저장할 수 있어요' : '즐겨찾기'}
-                      onClick={(e) => { e.stopPropagation(); addFavorite({ source: 'tour', id: p.id, title: p.title }) }}>
-                      <i className="bi bi-star" />
+                    <button type="button" className={`w-star${isFav('tour', p.id) ? ' on' : ''}`} disabled={p.sample}
+                      aria-label={isFav('tour', p.id) ? '즐겨찾기에서 빼기' : '즐겨찾기'}
+                      title={p.sample ? '실제 데이터에서만 저장할 수 있어요' : isFav('tour', p.id) ? '저장됨 — 누르면 빼요' : '즐겨찾기'}
+                      onClick={(e) => { e.stopPropagation(); toggle({ source: 'tour', id: p.id, title: p.title }) }}>
+                      <i className={`bi bi-star${isFav('tour', p.id) ? '-fill' : ''}`} />
                     </button>
                   </div>
                   <div className="w-pcard-body">
