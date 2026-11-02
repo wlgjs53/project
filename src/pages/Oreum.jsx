@@ -7,6 +7,7 @@ import OreumImg from '../components/OreumImg'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { useOreums } from '../hooks/useOreums'
 import { useWindForecast } from '../hooks/useWindForecast'
+import { useFavorites } from '../hooks/useFavorites'
 import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
@@ -48,6 +49,7 @@ function HillArt({ height }) {
 // 바람따라 오름 — 제주 오름 90곳을 오늘의 바람으로 견줘 "오늘 오르기 좋은 오름" 순으로 보여 준다.
 export default function Oreum() {
   const { items, error } = useOreums()
+  const { isFav, toggle } = useFavorites()
   const forecast = useWindForecast()
   const [photos, setPhotos] = useState([])
   const [area, setArea] = useState('')
@@ -113,6 +115,9 @@ export default function Oreum() {
                     <div className="oreum-card" role="button" onClick={() => setSel(o)}>
                       <div className="oreum-img">
                         {o.photo?.image ? <OreumImg photo={o.photo} alt={o.title} /> : <HillArt height={o.height} />}
+                        <button type="button" className={`oreum-star${isFav('oreum', o.id) ? ' on' : ''}`} aria-label="즐겨찾기" onClick={(e) => { e.stopPropagation(); toggle({ source: 'oreum', id: o.id, title: o.title }) }}>
+                          <i className={`bi bi-star${isFav('oreum', o.id) ? '-fill' : ''}`} />
+                        </button>
                         <Badge bg={o.tag.bg} text={o.tag.bg === 'warning' ? 'dark' : undefined} className="oreum-tag">{o.tag.text}</Badge>
                       </div>
                       <div className="p-3">

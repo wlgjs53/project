@@ -15,6 +15,7 @@ import { KIND_LABEL, MAX_PLACES, autoPick, buildCourse, hhmm, kindOf, pickDay } 
 import { exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { kakaoRoute, kakaoTo } from '../lib/nav'
+import { isOreum } from '../lib/course'
 
 // 시간대별 풍속 막대. 코스에서 각 곳에 도착하는 시각 아래에 순서 번호를 붙인다.
 function WindBars({ slots, steps }) {
@@ -64,7 +65,7 @@ export default function Course() {
   const [active, setActive] = useState(null)
   const cardRefs = useRef([])
 
-  const tourFavs = favorites.filter((f) => f.source === 'tour')
+  const tourFavs = favorites.filter((f) => f.source === 'tour' || f.source === 'oreum') // 명소·맛집·오름(위치 정보가 있는 것)
   const heritageCount = favorites.length - tourFavs.length // 국가유산은 위치 정보가 없어 코스에 못 넣는다
   const mine = mode ?? (tourFavs.length ? 'mine' : 'auto')
 
@@ -72,7 +73,7 @@ export default function Course() {
   const enoughWind = day.slots.length >= 3
 
   // 1) 코스에 넣을 장소 정하기
-  const candidates = useMemo(() => tourFavs.map((f) => toCandidate(f, meta[`tour:${f.item_id}`])).filter(Boolean),
+  const candidates = useMemo(() => tourFavs.map((f) => toCandidate(f, meta[`${f.source}:${f.item_id}`])).filter(Boolean),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [favorites, meta])
   const selIds = chosen ?? candidates.slice(0, MAX_PLACES).map((c) => c.id)
@@ -179,7 +180,7 @@ export default function Course() {
                   <ConfirmButton label="전체 삭제" question={`즐겨찾기 ${tourFavs.length}곳을 모두 삭제할까요?`} onConfirm={deleteAll} />
                 </div>
                 {pending && (
-                  tourFavs.some((f) => meta[`tour:${f.item_id}`]?.failed)
+                  tourFavs.some((f) => meta[`${f.source}:${f.item_id}`]?.failed)
                     ? <div className="small text-warning mt-2">일부 장소의 위치를 불러오지 못했어요. <Button variant="link" size="sm" className="p-0 align-baseline" onClick={retry}>다시 불러오기</Button></div>
                     : <div className="small text-muted mt-2">위치 정보를 불러오는 중…</div>
                 )}
@@ -249,7 +250,7 @@ export default function Course() {
                             <div className="course-body">
                               <div className="d-flex flex-wrap align-items-center gap-1 mb-1">
                                 <b>{hhmm(s.arrive)}</b><small className="text-muted me-1">~{hhmm(s.depart)}</small>
-                                <Badge bg={/오름/.test(s.place.title) ? 'success' : 'secondary'}>{/오름/.test(s.place.title) ? '오름' : KIND_LABEL[s.kind]}</Badge>
+                                <Badge bg={isOreum(s.place) ? 'success' : 'secondary'}>{isOreum(s.place) ? '오름' : KIND_LABEL[s.kind]}</Badge>
                                 {s.kind === 'sight' && exposureLabel(s.e) && <Badge bg={s.e > 0 ? 'warning' : 'info'} text="dark">{exposureLabel(s.e)}</Badge>}
                               </div>
                               <div className="fw-bold">{s.place.title}</div>

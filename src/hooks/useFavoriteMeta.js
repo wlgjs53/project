@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchHeritage, fetchPlaceBrief } from '../api/client'
+import { fetchHeritage, fetchOreums, fetchPlaceBrief } from '../api/client'
+import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
 
 // 즐겨찾기 표에는 이름만 저장되어 있어서, 목록에 보여 줄 사진·주소·좌표는 저장된 항목 번호로 다시 불러온다.
 // 같은 항목은 한 번만 불러오도록 결과(약속)를 모듈 안에 보관한다. 실패는 보관하지 않아 다시 시도할 수 있다.
@@ -12,6 +13,14 @@ const retry = (fn, n = 2) => fn().catch((e) => (n > 0 ? wait(900).then(() => ret
 function load(f) {
   if (f.source === 'tour') {
     return retry(() => fetchPlaceBrief(f.item_id)).then((p) => ({ image: p.image, subtitle: p.addr, lat: p.lat, lng: p.lng, type: p.type }))
+  }
+  if (f.source === 'oreum') { // 오름은 id(o:영문이름)로 90곳 목록에서 찾고, 사진은 공식·검색 사진 중에서 맞춘다
+    return Promise.all([retry(fetchOreums), loadOreumPhotos()]).then(([r, photos]) => {
+      const o = r.items.find((x) => x.id === f.item_id)
+      if (!o) return { failed: true }
+      const ph = findOreumPhoto(photos, o)
+      return { image: ph ? (ph.thumb || ph.image) : '', subtitle: o.addr, lat: o.lat, lng: o.lng, type: 'oreum' }
+    })
   }
   if (f.source === 'heritage') { // 유산은 이름이 곧 id
     return retry(() => fetchHeritage(f.title)).then((list) => {

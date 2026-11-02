@@ -8,7 +8,7 @@ import { Empty, Loading } from '../components/Status'
 import { useAppStore } from '../store/useAppStore'
 import { useFavoriteMeta } from '../hooks/useFavoriteMeta'
 
-const SOURCE = { tour: '명소·맛집', heritage: '국가유산' } // 저장된 출처 → 화면에 보일 이름
+const SOURCE = { tour: '명소·맛집', heritage: '국가유산', oreum: '오름' } // 저장된 출처 → 화면에 보일 이름
 
 // 즐겨찾기 — store 의 favorites 를 보여 주고, 사진·주소는 항목 번호로 다시 불러온다. 카드의 삭제 버튼으로 뺄 수 있습니다 (STEP 5)
 export default function My() {

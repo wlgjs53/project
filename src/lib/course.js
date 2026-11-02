@@ -8,6 +8,7 @@ const SPEED_KMH = 35               // (대체용) 직선거리 추정 시 평균
 const STAY_MIN = 60                // 한 곳에서 머무는 시간
 const LUNCH = 12.5 * 60, DINNER = 18 * 60
 
+export const isOreum = (p) => p.type === 'oreum' || /오름/.test(p.title)
 export const kindOf = (type) => (type === '39' ? 'food' : type === '14' ? 'indoor' : 'sight')
 export const KIND_LABEL = { sight: '명소', indoor: '문화시설', food: '맛집' }
 
@@ -161,7 +162,7 @@ function reasonFor(s, i, { minW, maxW }) {
   if (s.kind === 'indoor') {
     return strong ? `바람이 센 시간(${w})이라 실내인 이곳이 편해요.` : `실내라 바람과 상관없이 둘러볼 수 있어요. (바람 ${w})`
   }
-  if (/오름/.test(s.place.title)) { // 오름은 해안이 아니라 능선·정상의 바람을 말한다
+  if (isOreum(s.place)) { // 오름은 해안이 아니라 능선·정상의 바람을 말한다
     if (strong) return `바람이 센 시간(${w})이에요. 정상부는 더 셀 수 있으니 능선은 조심하고 방풍 옷차림을 챙기세요.`
     if (calm) return `바람이 약한 시간(${w})이라 오름에 오르기 좋아요. 정상에서는 바람이 조금 더 셀 수 있어요.`
     return `${w}로 적당한 바람이에요. 정상부는 조금 더 셀 수 있어요.`

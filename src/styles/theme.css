@@ -82,3 +82,5 @@ body { font-family: 'Pretendard', system-ui, sans-serif; background: #050b14; }
 .oreum-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .oreum-art { position: absolute; inset: auto 0 0 0; width: 100%; height: 100%; }
 .oreum-tag { position: absolute; top: 8px; left: 8px; }
+.oreum-star { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(5, 11, 20, .6); color: #fff; }
+.oreum-star.on { color: #f2c879; }

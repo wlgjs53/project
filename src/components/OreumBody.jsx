@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge, Button } from 'react-bootstrap'
 import { fetchNearby } from '../api/client'
 import OreumImg from './OreumImg'
+import { useFavorites } from '../hooks/useFavorites'
 import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { kakaoTo } from '../lib/nav'
@@ -11,6 +12,8 @@ const cache = new Map() // 오름 id → { photo, foods }
 
 // 오름 상세(바람길 지도의 오름 점을 눌렀을 때): 표고·설명(제주오름요약설명) + 같은 이름의 TourAPI 사진 + 오름 근처 맛집
 export default function OreumBody({ place, wind }) {
+  const { isFav, toggle } = useFavorites()
+  const saved = isFav('oreum', place.id)
   const [extra, setExtra] = useState(() => cache.get(place.id) ?? null)
 
   useEffect(() => {
@@ -85,6 +88,9 @@ export default function OreumBody({ place, wind }) {
         ))}
       </div>
 
+      <Button size="sm" variant={saved ? 'primary' : 'outline-primary'} className="me-2 mb-3" onClick={() => toggle({ source: 'oreum', id: place.id, title: place.title })}>
+        <i className={`bi bi-star${saved ? '-fill' : ''} me-1`} />{saved ? '저장됨' : '즐겨찾기'}
+      </Button>
       <Button size="sm" variant="outline-secondary" href={kakaoTo(place)} target="_blank" rel="noopener noreferrer" className="mb-3">
         <i className="bi bi-signpost-split me-1" />길찾기
       </Button>
