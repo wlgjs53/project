@@ -11,6 +11,7 @@ import { useWindForecast } from '../hooks/useWindForecast'
 import { useAutoPool } from '../hooks/useAutoPool'
 import { useDistanceMatrix, useRouteLine } from '../hooks/useCourseRoute'
 import { fetchNearby } from '../api/client'
+import { useFavorites } from '../hooks/useFavorites'
 import { KIND_LABEL, MAX_PLACES, autoPick, buildCourse, hhmm, kindOf, pickDay } from '../lib/course'
 import { exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
@@ -52,6 +53,8 @@ export default function Course() {
   const favLoading = useAppStore((s) => s.favLoading)
   const toast = useAppStore((s) => s.toast)
   const removeFavorites = useAppStore((s) => s.removeFavorites)
+  const { isFav, toggle: toggleFav } = useFavorites()
+  const favSource = (p) => (String(p.id).startsWith('o:') ? 'oreum' : 'tour') // 오름 목록의 오름은 oreum, 나머지는 TourAPI 장소
   const setCourseStops = useAppStore((s) => s.setCourseStops)
   const { meta, retry } = useFavoriteMeta(favorites)
   const forecast = useWindForecast()
@@ -76,7 +79,10 @@ export default function Course() {
   const candidates = useMemo(() => tourFavs.map((f) => toCandidate(f, meta[`${f.source}:${f.item_id}`])).filter(Boolean),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [favorites, meta])
-  const selIds = chosen ?? candidates.slice(0, MAX_PLACES).map((c) => c.id)
+  // 직접 고른 목록(chosen)이 지금 즐겨찾기와 하나도 안 맞으면(닉네임을 바꿨거나 다 삭제한 경우) 처음 6곳으로 되돌린다. 일부러 전부 해제한 경우([])는 그대로 둔다.
+  const known = (id) => candidates.some((c) => c.id === id)
+  const picked = chosen === null ? null : chosen.length === 0 ? [] : chosen.some(known) ? chosen.filter(known) : null
+  const selIds = picked ?? candidates.slice(0, MAX_PLACES).map((c) => c.id)
   const auto = useAutoPool(area, mine === 'auto')
   const autoPlaces = useMemo(() => (auto.pool && enoughWind ? autoPick({ ...auto.pool, sights: theme === 'oreum' && auto.pool.oreums.length >= 3 ? auto.pool.oreums : auto.pool.sights, slots: day.slots, variant }) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -246,6 +252,10 @@ export default function Course() {
                           )}
                           <div ref={(el) => { cardRefs.current[i] = el }} className={`course-card ${active === i ? 'active' : ''}`} onClick={() => setActive(i)}>
                             <span className="course-no">{i + 1}</span>
+                            <button type="button" className={`course-star${isFav(favSource(s.place), s.place.id) ? ' on' : ''}`} aria-label="즐겨찾기" title="즐겨찾기에 담기"
+                              onClick={(e) => { e.stopPropagation(); toggleFav({ source: favSource(s.place), id: s.place.id, title: s.place.title }) }}>
+                              <i className={`bi bi-star${isFav(favSource(s.place), s.place.id) ? '-fill' : ''}`} />
+                            </button>
                             {s.place.image && <img src={s.place.image} alt="" loading="lazy" />}
                             <div className="course-body">
                               <div className="d-flex flex-wrap align-items-center gap-1 mb-1">
