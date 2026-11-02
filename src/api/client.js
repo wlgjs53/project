@@ -32,6 +32,9 @@ export const fetchPlaces = (keyword = '', type = '12', area = '') =>
 // 좌표 주변 관광지(12)·음식점(39) 등 — 가까운 순
 export const fetchNearby = ({ lat, lng, type = '12', radius = 5000, rows = 6 }) =>
   get(`/api/nearby?lat=${lat}&lng=${lng}&type=${type}&radius=${radius}&rows=${rows}`)
+// 실제 도로 기준 길찾기 (바람따라 코스): mode 'table' = 모든 쌍의 시간·거리 행렬, 'route' = 정해진 순서의 경로(지도 선 포함)
+export const fetchRoute = (points, mode = 'table') =>
+  get(`/api/route?mode=${mode}&pts=${encodeURIComponent(points.map((p) => `${p.lng},${p.lat}`).join(';'))}`)
 // 장소 하나의 상세(설명·사진·이용 정보) — 카드를 눌렀을 때만 부른다
 export const fetchPlaceDetail = ({ id, type = '12' }) => get(`/api/place?id=${id}&type=${type}`)
 // 이름·주소·사진만 (즐겨찾기 목록에서 사진을 다시 불러올 때)
