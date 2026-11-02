@@ -10,7 +10,7 @@ const TYPES = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 39: '
 
 export default function Places() {
   const addFavorite = useAppStore((s) => s.addFavorite)   // STEP 5에서 사용
-  const [keyword, setKeyword] = useState('해녀')
+  const [keyword, setKeyword] = useState('')             // 비워 두고 입력창의 예시 문구(placeholder)만 보여 준다
   const [type, setType] = useState('12')
   const [places, setPlaces] = useState([])               // ① 데이터
   const [loading, setLoading] = useState(true)           // ② 로딩
@@ -33,7 +33,7 @@ export default function Places() {
           <Form.Select value={type} onChange={(e) => setType(e.target.value)} style={{ maxWidth: 140 }}>
             {Object.entries(TYPES).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </Form.Select>
-          <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="검색어" />
+          <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 해녀" />
           <Button type="submit"><i className="bi bi-search" /></Button>
         </InputGroup>
       </Form>

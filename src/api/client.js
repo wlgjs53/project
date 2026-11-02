@@ -35,6 +35,9 @@ export const fetchWeather =(place = '제주시') =>
   get(`/api/weather?place=${encodeURIComponent(place)}`)
 export const fetchHeritage = (keyword = '') =>
   get(`/api/heritage?keyword=${encodeURIComponent(keyword)}`)
+// 국가유산 상세(공식 설명문·사진 여러 장) — 목록 항목의 kdcd/ctcd/asno 로 조회
+export const fetchHeritageDetail = ({ kdcd, ctcd, asno }) =>
+  get(`/api/heritage?kdcd=${kdcd}&ctcd=${ctcd}&asno=${asno}`)
 
 // STEP 6: 에이전트
 export const askAgent = (message, history) => post('/api/agent', { message, history })
