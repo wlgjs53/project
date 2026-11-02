@@ -8,7 +8,7 @@ import { useAppStore } from '../store/useAppStore'
 
 export default function Heritage() {
   const addFavorite = useAppStore((s) => s.addFavorite)
-  const [keyword, setKeyword] = useState('')
+  const [keyword, setKeyword] = useState('영등')   // 처음에 칠머리당영등굿이 보이도록
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -24,10 +24,10 @@ export default function Heritage() {
 
   return (
     <>
-      <PageHeader icon="bank" title="국가유산" subtitle="국가유산청 국가유산 검색" />
+      <PageHeader icon="bank" title="영등굿·국가유산" subtitle="칠머리당영등굿을 비롯한 제주의 국가유산 — 국가유산청 오픈API" />
       <Form onSubmit={search} className="mb-4">
         <InputGroup>
-          <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 관덕정, 돌하르방" />
+          <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 영등, 관덕정, 해녀" />
           <Button type="submit"><i className="bi bi-search" /></Button>
         </InputGroup>
       </Form>

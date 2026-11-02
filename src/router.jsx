@@ -14,9 +14,9 @@ import NotFound from './pages/NotFound'
 // ※ Places/Heritage 는 샘플 이름입니다. 자신의 주제에 맞게 바꾸세요.
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house' },
-  { to: '/places', label: '관광·문화', icon: 'geo-alt' },
-  { to: '/heritage', label: '국가유산', icon: 'bank' },
-  { to: '/agent', label: 'AI 가이드', icon: 'robot' },
+  { to: '/places', label: '명소·맛집', icon: 'geo-alt' },
+  { to: '/heritage', label: '영등굿·유산', icon: 'bank' },
+  { to: '/agent', label: '영등할망 가이드', icon: 'robot' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
 ]
 

@@ -23,7 +23,8 @@ async function callTour(op, extra) {
 
 const toPlace = (p) => ({
   id: p.contentid, title: p.title, addr: p.addr1,
-  image: p.firstimage, lng: Number(p.mapx), lat: Number(p.mapy), type: p.contenttypeid,
+  image: (p.firstimage || '').replace(/^http:/, 'https:'), // https 사이트에서 막히지 않도록
+  lng: Number(p.mapx), lat: Number(p.mapy), type: p.contenttypeid,
   dist: p.dist === undefined ? undefined : Number(p.dist), // 위치 검색일 때만: 기준점까지 거리(m)
 });
 

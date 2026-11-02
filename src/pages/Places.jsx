@@ -6,7 +6,7 @@ import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchPlaces } from '../api/client'
 import { useAppStore } from '../store/useAppStore'
 
-const TYPES = { 12: '관광지', 14: '문화시설', 15: '축제·행사' }
+const TYPES = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 39: '음식점' }
 
 export default function Places() {
   const addFavorite = useAppStore((s) => s.addFavorite)   // STEP 5에서 사용
@@ -27,7 +27,7 @@ export default function Places() {
 
   return (
     <>
-      <PageHeader icon="geo-alt" title="관광·문화" subtitle="한국관광공사 TourAPI" />
+      <PageHeader icon="geo-alt" title="명소·맛집" subtitle="영등할망의 길목에서 찾는 제주의 명소와 맛집 — 한국관광공사 TourAPI" />
       <Form onSubmit={search} className="mb-4">
         <InputGroup>
           <Form.Select value={type} onChange={(e) => setType(e.target.value)} style={{ maxWidth: 140 }}>
