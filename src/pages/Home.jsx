@@ -51,6 +51,14 @@ export default function Home() {
   const [sel, setSel] = useState(null) // { place, kind, stopId }
   const [panelOpen, setPanelOpen] = useState(false)
   const select = (stopId) => (place, kind) => { setSel({ place, kind, stopId }); setPanelOpen(true) }
+  // 패널이 열린 채로 페이지를 스크롤하면 다음 내용이 보이도록 패널을 닫는다 (카메라도 스크롤 장면으로 돌아감)
+  useEffect(() => {
+    if (!panelOpen) return
+    const y0 = scrollY
+    const onScroll = () => { if (Math.abs(scrollY - y0) > 40) setPanelOpen(false) }
+    addEventListener('scroll', onScroll, { passive: true })
+    return () => removeEventListener('scroll', onScroll)
+  }, [panelOpen])
   const narrow = useNarrow()
   const placement = narrow ? 'bottom' : sel?.stopId === 'chil' ? 'start' : 'end' // 스토리 카드의 반대편
   const selectedId = panelOpen ? sel?.place.id : null

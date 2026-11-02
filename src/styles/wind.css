@@ -102,6 +102,7 @@
 
 /* 장소 상세 패널 */
 .w-detail { --bs-offcanvas-width: min(440px, 100vw); --bs-offcanvas-height: 78vh; border-color: rgba(255,255,255,.12) !important; }
+.w-detail .offcanvas-body { overscroll-behavior: contain; } /* 패널 안쪽 스크롤이 끝에 닿아도 페이지가 따라 스크롤(=패널이 닫힘)되지 않게 */
 .w-why { border: 1px solid rgba(242,200,121,.35); background: rgba(242,200,121,.07); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; }
 .w-why b { display: block; color: #f2c879; font-size: 12px; letter-spacing: .08em; margin-bottom: 4px; }
 
