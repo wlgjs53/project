@@ -62,6 +62,21 @@ export const useAppStore = create(
         set({ favorites: get().favorites.filter((f) => f.id !== fav.id) })
         get().toast('즐겨찾기에서 뺐어요')
       },
+      // 여러 개를 한 번에 빼기 (선택 삭제·전체 삭제). removeFavorite 와 같은 이유로 지워진 행 수를 확인한다.
+      removeFavorites: async (favs) => {
+        if (!supabase) return get().toast('Supabase 설정(.env.local)이 필요해요', 'warning')
+        if (!favs.length) return
+        const ids = favs.map((f) => f.id)
+        const { data, error } = await supabase.from('favorites').delete().in('id', ids).select()
+        if (error) return get().toast(error.message, 'danger')
+        if (!data?.length) return get().toast('삭제하지 못했어요 — Supabase 에 favorites delete 정책이 필요해요', 'danger')
+        const gone = new Set(data.map((r) => r.id))
+        set({ favorites: get().favorites.filter((f) => !gone.has(f.id)) })
+        get().toast(`즐겨찾기 ${data.length}곳을 뺐어요`)
+      },
+      // 가장 최근에 만든 바람따라 코스의 장소들 — 바람길 지도의 "동선 안내"가 이어서 보여 준다
+      courseStops: [],
+      setCourseStops: (courseStops) => set({ courseStops }),
       // 별을 누를 때: 이미 있으면 빼고, 없으면 저장
       toggleFavorite: async ({ source, id, title }) => {
         const found = get().favorites.find((f) => f.source === source && f.item_id === String(id))
@@ -86,7 +101,7 @@ export const useAppStore = create(
     }),
     {
       name: 'jeju-ip-store',                          // localStorage 키 이름
-      partialize: (s) => ({ nickname: s.nickname }),  // 저장할 항목만 고르기
+      partialize: (s) => ({ nickname: s.nickname, courseStops: s.courseStops }),  // 저장할 항목만 고르기
     },
   ),
 )

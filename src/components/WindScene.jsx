@@ -14,7 +14,8 @@ import { REGIONS } from '../data/regions'
 // onPickMarker(id): 지도의 명소·맛집 빛을 눌렀을 때, onPickStop(id): 영등 여정 장소(금빛 기둥)를 눌렀을 때
 // 마우스 왼쪽 버튼으로 드래그하면 시점을 돌려 볼 수 있다 (더블클릭하면 원래 시점, 스크롤하면 자동 복귀)
 // labels: 지명(제주시·서귀포시·한라산·읍면)과 "지금 보는 곳" 자막을 보일지
-export default function WindScene({ wind, stations = null, markers = [], focus = null, labels = true, onPickMarker, onPickStop }) {
+// route: { points: [{x, z}] 도로 경로선, stops: [{x, z}] 방문 순서 } 이면 지형 위에 동선을 그린다 (overview 가 켜지면 카메라가 동선 전체를 내려다본다)
+export default function WindScene({ wind, stations = null, markers = [], focus = null, labels = true, route = null, overview = false, onPickMarker, onPickStop }) {
   const canvasRef = useRef(null)
   const barRef = useRef(null)
   const pinEls = useRef([])
@@ -40,6 +41,15 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
     markersRef.current = markers
     sceneApi.current?.setMarkers(markers)
   }, [markers])
+
+  const routeRef = useRef(route)
+  const overviewRef = useRef(overview)
+  const boundsRef = useRef(null) // 동선이 차지하는 범위 { cx, cz, ext }
+  useEffect(() => {
+    routeRef.current = route
+    sceneApi.current?.setRoute(route)
+  }, [route])
+  useEffect(() => { overviewRef.current = overview }, [overview])
 
   useEffect(() => { focusRef.current = focus }, [focus])
   useEffect(() => { labelsRef.current = labels }, [labels])
@@ -254,8 +264,46 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
         markerGroup.add(s)
       }
     }
-    sceneApi.current = { setMarkers }
+    // 동선: 도로 경로선(청록 관)을 지형 위에 얹고, 방문 순서 번호(금색 원)를 세운다
+    const routeGroup = new THREE.Group()
+    scene.add(routeGroup)
+    const numTex = []
+    function setRoute(r) {
+      routeGroup.traverse((o) => { o.geometry?.dispose(); o.material?.dispose() })
+      routeGroup.clear()
+      numTex.splice(0).forEach((t) => t.dispose())
+      boundsRef.current = null
+      if (!r?.stops?.length) return
+      const pts = r.points?.length ? r.points : r.stops
+      const step = Math.max(1, Math.floor(pts.length / 450)) // 너무 촘촘하지 않게 솎는다
+      const v = pts.filter((_, i) => i % step === 0 || i === pts.length - 1).map((p) => new THREE.Vector3(p.x, Math.max(heightAt(p.x, p.z), 0) + 0.45, p.z))
+      if (v.length > 1) {
+        const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(v), v.length * 2, 0.13, 5, false)
+        routeGroup.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x7fe3d6, fog: false })))
+      }
+      r.stops.forEach((s, i) => {
+        const c = document.createElement('canvas')
+        c.width = c.height = 64
+        const g = c.getContext('2d')
+        g.fillStyle = '#f2c879'; g.beginPath(); g.arc(32, 32, 28, 0, Math.PI * 2); g.fill()
+        g.lineWidth = 4; g.strokeStyle = '#050b14'; g.stroke()
+        g.fillStyle = '#1a1305'; g.font = 'bold 34px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'
+        g.fillText(String(i + 1), 32, 34)
+        const tex = new THREE.CanvasTexture(c)
+        numTex.push(tex)
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true, fog: false }))
+        sp.position.set(s.x, Math.max(heightAt(s.x, s.z), 0) + 1.3, s.z)
+        sp.scale.set(2.1, 2.1, 1)
+        sp.renderOrder = 10
+        routeGroup.add(sp)
+      })
+      const xs = pts.map((p) => p.x), zs = pts.map((p) => p.z)
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), z0 = Math.min(...zs), z1 = Math.max(...zs)
+      boundsRef.current = { cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, ext: Math.max(x1 - x0, (z1 - z0) * 1.3, 10) }
+    }
+    sceneApi.current = { setMarkers, setRoute }
     setMarkers(markersRef.current)
+    setRoute(routeRef.current)
 
     const _v = new THREE.Vector3()
     function updatePins() {
@@ -466,6 +514,11 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
         wantPos.set(f.x + (dx / d) * 6.5, gy + 3.4, f.z + (dz / d) * 6.5)
         wantTgt.set(f.x - (dx / d) * 2, gy + 1.0, f.z - (dz / d) * 2) // 장소보다 살짝 안쪽(육지 쪽)을 보게 해서 육지가 화면을 채우도록
         wantSide = 0
+      } else if (overviewRef.current && boundsRef.current) { // 동선 안내 중이면 동선 전체가 보이게 위에서 내려다본다
+        const { cx, cz, ext } = boundsRef.current
+        wantPos.set(cx, 8 + ext * 1.1, cz + ext * 0.85)
+        wantTgt.set(cx, 0, cz)
+        wantSide = 1 // 오른쪽의 안내 패널에 가리지 않게 동선을 왼쪽으로 비킨다
       }
       // 드래그로 돌린 시점: 카메라를 목표점 둘레로 돌린다 (수평 회전 yaw, 높낮이 pitch)
       const ko = 1 - Math.exp(-dt * 8)
@@ -522,6 +575,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
         const m = o.material
         if (m) (Array.isArray(m) ? m : [m]).forEach((x) => x.dispose())
       })
+      setRoute(null)
       glowTex.dispose()
       markerTex.tour.dispose()
       markerTex.food.dispose()

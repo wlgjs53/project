@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Alert, Badge, Button, Nav } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
 import RouteMap from '../components/RouteMap'
+import ConfirmButton from '../components/ConfirmButton'
 import { ErrorAlert, Loading } from '../components/Status'
 import { useAppStore } from '../store/useAppStore'
 import { useFavoriteMeta } from '../hooks/useFavoriteMeta'
@@ -49,6 +50,8 @@ export default function Course() {
   const favorites = useAppStore((s) => s.favorites)
   const favLoading = useAppStore((s) => s.favLoading)
   const toast = useAppStore((s) => s.toast)
+  const removeFavorites = useAppStore((s) => s.removeFavorites)
+  const setCourseStops = useAppStore((s) => s.setCourseStops)
   const { meta, retry } = useFavoriteMeta(favorites)
   const forecast = useWindForecast()
 
@@ -90,6 +93,11 @@ export default function Course() {
   const stops = useMemo(() => course?.steps.map((s) => s.place) ?? [], [course])
   const { line } = useRouteLine(stops)
 
+  // 바람길 지도의 "동선 안내"가 이어서 보여 줄 수 있게 마지막 코스를 기억해 둔다
+  useEffect(() => {
+    if (stops.length > 1) setCourseStops(stops.map((p) => ({ id: p.id, title: p.title, lat: p.lat, lng: p.lng })))
+  }, [stops, setCourseStops])
+
   // 오늘 코스에 식사할 곳이 없으면 코스 중심 근처의 맛집(사진 있는 곳)을 권한다
   const hasFood = stops.some((p) => kindOf(p.type) === 'food')
   const [foodTips, setFoodTips] = useState({ k: '', items: [] })
@@ -110,7 +118,11 @@ export default function Course() {
     if (selIds.includes(id)) setChosen(selIds.filter((x) => x !== id))
     else if (selIds.length < MAX_PLACES) setChosen([...selIds, id])
   }
-  const switchMode = (m) => { setMode(m); setExtras([]); setActive(null) }
+  // 삭제 = 즐겨찾기에서 빼기 (Supabase 에서도 지워짐). 선택 삭제는 지금 코스에 체크된 곳들.
+  const favOf = (id) => tourFavs.find((f) => f.item_id === String(id))
+  const deleteSelected = async () => { await removeFavorites(selIds.map(favOf).filter(Boolean)); setChosen(null) }
+  const deleteAll = async () => { await removeFavorites(tourFavs); setChosen(null) }
+  const switchMode =(m) => { setMode(m); setExtras([]); setActive(null) }
   const pickFromMap = (i) => { setActive(i); cardRefs.current[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
 
   async function copy() {
@@ -160,6 +172,10 @@ export default function Course() {
                       </button>
                     )
                   })}
+                </div>
+                <div className="d-flex flex-wrap gap-3 mt-3">
+                  <ConfirmButton label={`선택한 ${selIds.length}곳 삭제`} question={`선택한 ${selIds.length}곳을 즐겨찾기에서 삭제할까요?`} disabled={!selIds.length} onConfirm={deleteSelected} />
+                  <ConfirmButton label="전체 삭제" question={`즐겨찾기 ${tourFavs.length}곳을 모두 삭제할까요?`} onConfirm={deleteAll} />
                 </div>
                 {pending && (
                   tourFavs.some((f) => meta[`tour:${f.item_id}`]?.failed)
@@ -257,7 +273,7 @@ export default function Course() {
 
                   <div className="d-flex flex-wrap gap-2 mt-3">
                     <Button variant="outline-primary" size="sm" onClick={copy}><i className="bi bi-clipboard me-1" />코스 복사</Button>
-                    <Link to="/" className="btn btn-outline-secondary btn-sm"><i className="bi bi-wind me-1" />바람길 지도 보기</Link>
+                    <Link to="/?route=course" className="btn btn-outline-secondary btn-sm"><i className="bi bi-wind me-1" />바람길 지도에서 동선 보기</Link>
                   </div>
                 </div>
               </div>

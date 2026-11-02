@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import WindScene from '../components/WindScene'
+import RoutePanel from '../components/RoutePanel'
+import { useAppStore } from '../store/useAppStore'
+import { useRouteLine } from '../hooks/useCourseRoute'
+import { llToXZ } from '../lib/geo'
 import StorySection from '../components/StorySection'
 import StoryPhoto from '../components/StoryPhoto'
 import WindMeter from '../components/WindMeter'
@@ -46,6 +51,17 @@ export default function Home() {
   const sound = useWindSound(wind)
   const [labelsOn, setLabelsOn] = useState(true) // 지도 지명 표시 (기본 켜짐, 옅게)
   const yd = useMemo(() => nextYeongdeung(), [])
+
+  // 동선 안내: 영등 여정(한수리→칠머리당→우도) 또는 바람따라에서 만든 내 코스를 3D 지도 위에 그린다 (?route=course 로 바로 열기)
+  const [params] = useSearchParams()
+  const courseStops = useAppStore((s) => s.courseStops)
+  const [routeOpen, setRouteOpen] = useState(params.has('route'))
+  const [routeKind, setRouteKind] = useState(params.get('route') === 'yd' || !params.has('route') ? 'yd' : 'course')
+  const routeStops = useMemo(() => (routeKind === 'course' ? courseStops : STOPS.map((s) => ({ title: s.name, sub: s.sub, lat: s.lat, lng: s.lng }))), [routeKind, courseStops])
+  const routeData = useRouteLine(routeOpen ? routeStops : [])
+  const sceneRoute = useMemo(() => (routeOpen && routeStops.length > 1
+    ? { points: routeData.line?.map(([la, ln]) => llToXZ(la, ln)) ?? null, stops: routeStops.map((s) => llToXZ(s.lat, s.lng)) }
+    : null), [routeOpen, routeStops, routeData.line])
 
   // 기상청 실제 바람: 불러오면 한 번 적용하고, 이후엔 사용자가 슬라이더로 바꿔 볼 수 있다
   const live = useLiveWind()
@@ -123,11 +139,19 @@ export default function Home() {
   }
 
   return (
-    <div className="w-home">
+    <div className={`w-home${routeOpen ? ' route-on' : ''}`}>
       <WindScene wind={wind} stations={isLive ? live.stations : null} markers={markers} focus={focus} labels={labelsOn}
-        onPickMarker={pickMarker} onPickStop={pickStop} />
+        route={sceneRoute} overview={!!sceneRoute} onPickMarker={pickMarker} onPickStop={pickStop} />
+      {routeOpen && (
+        <RoutePanel kind={routeKind} onKind={setRouteKind} onClose={() => setRouteOpen(false)}
+          kinds={[{ key: 'yd', label: '영등 여정' }, { key: 'course', label: `내 코스${courseStops.length > 1 ? ` (${courseStops.length}곳)` : ''}` }]}
+          stops={routeStops} legs={routeData.legs} loading={!routeData.ready} />
+      )}
       <WindMeter wind={wind} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
       <div className="w-tools">
+        <button type="button" className={`w-btn${routeOpen ? ' on' : ''}`} onClick={() => { setPanelOpen(false); setRouteOpen((v) => !v) }}>
+          <i className="bi bi-signpost-split me-1" />동선 안내
+        </button>
         <button type="button" className={`w-btn${labelsOn ? ' on' : ''}`} onClick={() => setLabelsOn((v) => !v)} title="지도의 지명(제주시·서귀포시 등) 표시">
           <i className="bi bi-geo-alt me-1" />지명
         </button>

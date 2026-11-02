@@ -29,20 +29,21 @@ export function useDistanceMatrix(places) {
   return { matrix: res.k === k ? res.matrix : null, ready: !k || res.k === k }
 }
 
-// 정해진 순서의 실제 도로 경로 선 → { line: [[위도, 경도], …] | null }
+// 정해진 순서의 실제 도로 경로 → { line: [[위도, 경도], …] | null, legs: [{ distance(m), duration(초) }] | null }
 export function useRouteLine(points) {
   const k = points.length >= 2 ? keyOf(points) : ''
-  const [res, setRes] = useState({ k: null, line: null })
+  const [res, setRes] = useState({ k: null, line: null, legs: null })
 
   useEffect(() => {
     if (!k) return
     let alive = true
     cached('R' + k, () => fetchRoute(points, 'route'))
-      .then((r) => alive && setRes({ k, line: r.line }))
-      .catch(() => alive && setRes({ k, line: null }))
+      .then((r) => alive && setRes({ k, line: r.line, legs: r.legs }))
+      .catch(() => alive && setRes({ k, line: null, legs: null }))
     return () => { alive = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [k])
 
-  return { line: res.k === k ? res.line : null }
+  const cur = res.k === k
+  return { line: cur ? res.line : null, legs: cur ? res.legs : null, ready: !k || cur }
 }
