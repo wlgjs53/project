@@ -80,7 +80,7 @@ export default function OreumBody({ place, wind }) {
       <Button size="sm" variant="outline-secondary" href={kakaoTo(place)} target="_blank" rel="noopener noreferrer" className="mb-3">
         <i className="bi bi-signpost-split me-1" />길찾기
       </Button>
-      <p className="small text-muted mb-0">출처: 제주특별자치도 제주오름요약설명(공공데이터포털){extra?.photo ? ' · 사진 한국관광공사 TourAPI' : ''}{extra?.foods.length ? ' · 맛집 한국관광공사 TourAPI' : ''}</p>
+      <p className="small text-muted mb-0">출처: 제주특별자치도 제주오름요약설명(공공데이터포털){extra?.photo ? ' · 사진 한국관광공사' : ''}{extra?.foods.length ? ' · 맛집 한국관광공사 TourAPI' : ''}</p>
     </>
   )
 }
