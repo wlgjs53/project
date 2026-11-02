@@ -21,3 +21,29 @@ export async function getOreums() {
   memo = { at: Date.now(), items };
   return items;
 }
+
+// ── 에이전트 도구용: 오늘의 바람으로 오름 견주기 ─────────────────────────────
+// 화면(src/pages/Oreum.jsx, src/lib/advice.js)과 같은 단순 계산이다. 고치면 양쪽을 같이 고칠 것.
+const toXZ = (lat, lng) => ({ x: (lng - 126.55) * 92.9, z: -(lat - 33.38) * 110.95 }); // 위경도 → 장면 좌표(km)
+const HAL = toXZ(33.3617, 126.5292);                                                     // 한라산 백록담 부근
+
+export async function rankOreums({ windSpeed = 4, windDir = 0, keyword = '', area = '', limit = 8 } = {}) {
+  const r = (Number(windDir) * Math.PI) / 180;
+  const fx = Math.sin(r), fz = -Math.cos(r);
+  const rows = (await getOreums())
+    .filter((o) => (!keyword || o.title.includes(keyword) || o.addr.includes(keyword)) && (!area || o.addr.startsWith(area)))
+    .map((o) => {
+      const { x, z } = toXZ(o.lat, o.lng);
+      const dx = x - HAL.x, dz = z - HAL.z;
+      const e = (dx * fx + dz * fz) / (Math.hypot(dx, dz) + 0.001); // +1 에 가까울수록 한라산 기준 바람이 불어오는 쪽
+      const feel = Number(windSpeed) * (1 + Math.min(o.height ?? 0, 500) / 700) * (e > 0.35 ? 1.2 : e < -0.35 ? 0.8 : 1);
+      return {
+        name: o.title, addr: o.addr, height_m: o.height, summit_wind_ms: Math.round(feel * 10) / 10,
+        side: e > 0.35 ? '바람 맞는 쪽' : e < -0.35 ? '바람 비낀 쪽' : '바람이 비스듬히 지나는 쪽',
+        verdict: feel < 5 ? '오르기 좋아요' : feel < 9 ? '바람 적당' : '바람 조심',
+        lat: o.lat, lng: o.lng, desc: o.desc,
+      };
+    })
+    .sort((a, b) => a.summit_wind_ms - b.summit_wind_ms);
+  return rows.slice(0, Math.min(15, Math.max(1, Number(limit) || 8)));
+}
