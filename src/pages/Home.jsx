@@ -42,6 +42,7 @@ function visibleCardOnRight() {
 export default function Home() {
   const [wind, setWind] = useState({ speed: 11, dir: 315 })
   const sound = useWindSound(wind)
+  const [labelsOn, setLabelsOn] = useState(true) // 지도 지명 표시 (기본 켜짐, 옅게)
   const yd = useMemo(() => nextYeongdeung(), [])
 
   // 기상청 실제 바람: 불러오면 한 번 적용하고, 이후엔 사용자가 슬라이더로 바꿔 볼 수 있다
@@ -114,11 +115,16 @@ export default function Home() {
 
   return (
     <div className="w-home">
-      <WindScene wind={wind} markers={markers} focus={focus} onPickMarker={pickMarker} onPickStop={pickStop} />
+      <WindScene wind={wind} markers={markers} focus={focus} labels={labelsOn} onPickMarker={pickMarker} onPickStop={pickStop} />
       <WindMeter wind={wind} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
-      <button type="button" className={`w-btn w-sound${sound.on ? ' on' : ''}`} onClick={sound.toggle}>
-        <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}
-      </button>
+      <div className="w-tools">
+        <button type="button" className={`w-btn${labelsOn ? ' on' : ''}`} onClick={() => setLabelsOn((v) => !v)} title="지도의 지명(제주시·서귀포시 등) 표시">
+          <i className="bi bi-geo-alt me-1" />지명
+        </button>
+        <button type="button" className={`w-btn${sound.on ? ' on' : ''}`} onClick={sound.toggle}>
+          <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}
+        </button>
+      </div>
 
       <PlaceDetailPanel sel={sel} show={panelOpen} wind={wind} placement={placement} onHide={() => setPanelOpen(false)} />
 

@@ -18,7 +18,18 @@
 }
 .w-btn:hover { background: rgba(127,227,214,.18); border-color: var(--w-accent); }
 .w-btn.on { background: rgba(127,227,214,.22); border-color: var(--w-accent); }
-.w-sound { position: fixed; top: 68px; right: clamp(16px, 3vw, 32px); z-index: 5; }
+.w-tools { position: fixed; top: 68px; right: clamp(16px, 3vw, 32px); z-index: 5; display: flex; gap: 8px; }
+
+/* 지명: 종이 지도의 글자처럼 — 박스 없이 옅은 크림색 글씨, 넓은 자간. 카드(z-index 2)보다 아래에 깔린다 */
+.w-region { position: fixed; left: 0; top: 0; z-index: 1; pointer-events: none; visibility: hidden; opacity: 0; white-space: nowrap; font-family: "Noto Serif KR", serif; color: #efe6cf; text-shadow: 0 1px 8px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.6); will-change: transform, opacity; }
+.w-region.major { font-size: 17px; font-weight: 500; letter-spacing: .55em; padding-left: .55em; }
+.w-region.minor { font-size: 12px; font-weight: 400; letter-spacing: .3em; padding-left: .3em; color: #dfe8e2; }
+/* "지금 보는 곳" 자막 — 지역이 바뀔 때만 잠깐 */
+.w-where { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; font-family: "Noto Serif KR", serif; font-size: 13px; letter-spacing: .3em; padding-left: .3em; color: #efe6cf; text-shadow: 0 1px 8px rgba(0,0,0,.8); opacity: 0; transition: opacity .7s ease; white-space: nowrap; }
+.w-where.show { opacity: .85; }
+/* 나침반 — 구석에 가는 선으로, 시점을 돌리면 함께 돈다 */
+.w-compass { position: fixed; top: 112px; right: clamp(16px, 3vw, 32px); width: 38px; height: 38px; z-index: 5; pointer-events: none; opacity: .75; }
+.w-compass svg { display: block; width: 100%; height: 100%; transform-origin: 50% 50%; }
 
 /* 풍속 표시 */
 .w-meter { position: fixed; left: clamp(16px, 3vw, 32px); bottom: 20px; z-index: 5; pointer-events: none; font-size: 13px; color: var(--w-muted); }
@@ -119,5 +130,7 @@
   .w-photo img { height: 130px; }
   .w-steps { grid-template-columns: 1fr; }
   .w-meter { bottom: auto; top: 112px; }
-  .w-sound { top: 64px; }
+  .w-tools { top: 64px; }
+  .w-compass { top: 106px; }
+  .w-where { top: 66px; font-size: 12px; }
 }

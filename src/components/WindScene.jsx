@@ -5,6 +5,7 @@ import { HAL, terrainH } from '../lib/terrain'
 import { DEM } from '../data/jejuDem'
 import { createWindField } from '../lib/windField'
 import { STOPS } from '../data/story'
+import { REGIONS } from '../data/regions'
 
 // 제주 3D 바람 장면. 스크롤 위치에 따라 카메라가 움직이고(섹션의 data-cam 사용),
 // wind({speed, dir})와 stations(관측 지점 배열)가 바뀌면 바람장을 다시 계산한다.
@@ -12,7 +13,8 @@ import { STOPS } from '../data/story'
 // focus: {x, z} 이면 스크롤 카메라 대신 그 지점을 가까이서 비춘다 (장소 상세를 열었을 때)
 // onPickMarker(id): 지도의 명소·맛집 빛을 눌렀을 때, onPickStop(id): 영등 여정 장소(금빛 기둥)를 눌렀을 때
 // 마우스 왼쪽 버튼으로 드래그하면 시점을 돌려 볼 수 있다 (더블클릭하면 원래 시점, 스크롤하면 자동 복귀)
-export default function WindScene({ wind, stations = null, markers = [], focus = null, onPickMarker, onPickStop }) {
+// labels: 지명(제주시·서귀포시·한라산·읍면)과 "지금 보는 곳" 자막을 보일지
+export default function WindScene({ wind, stations = null, markers = [], focus = null, labels = true, onPickMarker, onPickStop }) {
   const canvasRef = useRef(null)
   const barRef = useRef(null)
   const pinEls = useRef([])
@@ -20,6 +22,10 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
   const markersRef = useRef(markers)
   const focusRef = useRef(focus)
   const hoverRef = useRef(null)
+  const regionEls = useRef([])
+  const compassRef = useRef(null)
+  const whereRef = useRef(null)
+  const labelsRef = useRef(labels)
   const cbRef = useRef({})
   const sceneApi = useRef(null)
   const field = useRef(null)
@@ -36,6 +42,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
   }, [markers])
 
   useEffect(() => { focusRef.current = focus }, [focus])
+  useEffect(() => { labelsRef.current = labels }, [labels])
   useEffect(() => { cbRef.current = { onPickMarker, onPickStop } }) // 항상 최신 콜백을 쓰도록 (장면은 한 번만 만들어지므로)
 
   useEffect(() => {
@@ -375,6 +382,67 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       if (Math.abs(scrollY - lastScrollY) > 2) { orbit.tYaw = 0; orbit.tPitch = 0 }
       lastScrollY = scrollY
     }
+    // ── 지명 라벨: 종이 지도의 지명처럼 옅게. 멀리서는 큰 지명, 가까이서는 근처 읍면만, 가려지면 자동으로 흐려짐 ──
+    const regOp = REGIONS.map(() => 0)
+    const _lp = new THREE.Vector3()
+    const _ndc = new THREE.Vector3()
+    const _dir = new THREE.Vector3()
+    // 카메라에서 라벨 지점까지의 시선이 지형(한라산 등)에 가려지는지 — 가까운 곳 높이를 몇 군데 확인
+    function occluded(lx, ly, lz) {
+      const c = camera.position
+      for (let i = 1; i <= 10; i++) {
+        const t = i / 11
+        if (heightAt(c.x + (lx - c.x) * t, c.z + (lz - c.z) * t) > c.y + (ly - c.y) * t - 0.1) return true
+      }
+      return false
+    }
+    function updateLabels(dt) {
+      const on = labelsRef.current
+      const small = innerWidth < 720 // 좁은 화면에서는 큰 지명만
+      const ease = 1 - Math.exp(-dt * 5)
+      const zoom = camera.position.distanceTo(curTgt) // 카메라와 비추는 지점 사이 거리 = 얼마나 가까이 보고 있는지
+      REGIONS.forEach((r, i) => {
+        const el = regionEls.current[i]
+        if (!el) return
+        _lp.set(r.x, Math.max(heightAt(r.x, r.z), 0) + (r.id === 'halla' ? 0.9 : 0.7), r.z)
+        let want = 0
+        if (on) {
+          if (r.tier === 'major') want = smooth(22, 34, zoom) * 0.8 // 멀리서 볼 때 또렷, 가까이 가면 서서히 사라짐
+          else if (!small) want = (1 - smooth(30, 40, zoom)) * (1 - smooth(16, 26, Math.hypot(r.x - curTgt.x, r.z - curTgt.z))) * 0.65 // 가까이 볼 때, 보는 지점 근처만
+        }
+        _ndc.copy(_lp).project(camera)
+        if (_ndc.z >= 1) want = 0 // 카메라 뒤쪽
+        if (want > 0.02 && occluded(_lp.x, _lp.y, _lp.z)) want *= 0.1 // 산 뒤에 가려지면 거의 안 보이게
+        regOp[i] += (want - regOp[i]) * ease
+        el.style.opacity = regOp[i].toFixed(3)
+        el.style.visibility = regOp[i] < 0.02 ? 'hidden' : 'visible'
+        if (regOp[i] >= 0.02) el.style.transform = `translate(${(_ndc.x * 0.5 + 0.5) * innerWidth}px, ${(-_ndc.y * 0.5 + 0.5) * innerHeight}px) translate(-50%, -50%)`
+      })
+    }
+
+    // "지금 보는 곳" 자막: 카메라가 비추는 지점에서 가장 가까운 지역 이름. 지역이 바뀔 때만 잠깐 보였다 사라진다.
+    let lastArea = null, areaClock = 0, whereTimer = 0
+    function areaName(x, z) {
+      let best = REGIONS[0], bd = Infinity
+      for (const r of REGIONS) { const d = Math.hypot(r.x - x, r.z - z); if (d < bd) { bd = d; best = r } }
+      return `${best.name} ${heightAt(x, z) < -0.3 ? '앞바다' : '일대'}`
+    }
+    function updateWhere(dt) {
+      areaClock += dt
+      if (areaClock < 0.3) return
+      areaClock = 0
+      const name = areaName(curTgt.x, curTgt.z)
+      if (name === lastArea) return
+      const first = lastArea === null
+      lastArea = name
+      const el = whereRef.current
+      if (first || !el || !labelsRef.current) return
+      el.textContent = name
+      el.classList.add('show')
+      clearTimeout(whereTimer)
+      whereTimer = setTimeout(() => el.classList.remove('show'), 2600)
+    }
+
     canvas.addEventListener('pointerdown', onDown)
     canvas.addEventListener('pointermove', onMoveCanvas)
     canvas.addEventListener('pointerup', onUp)
@@ -418,12 +486,18 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       camera.position.lerp(wantPos, k)
       curTgt.lerp(wantTgt, k)
       camera.lookAt(curTgt)
+      if (compassRef.current) { // 나침반: 카메라가 보는 방향만큼 반대로 돌려 북쪽을 가리키게 한다
+        camera.getWorldDirection(_dir)
+        compassRef.current.style.transform = `rotate(${-Math.atan2(_dir.x, -_dir.z)}rad)`
+      }
       curSide += (wantSide - curSide) * k
       applyView()
       updateParticles(dt)
       updateSea()
       updatePins()
-      const max = document.documentElement.scrollHeight - innerHeight
+      updateLabels(dt)
+      updateWhere(dt)
+      const max =document.documentElement.scrollHeight - innerHeight
       if (barRef.current) barRef.current.style.height = (max > 0 ? (scrollY / max) * 100 : 0) + '%'
       renderer.render(scene, camera)
       raf = requestAnimationFrame(frame)
@@ -452,6 +526,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       markerTex.tour.dispose()
       markerTex.food.dispose()
       markerTex.sel.dispose()
+      clearTimeout(whereTimer)
       sceneApi.current = null
       renderer.dispose()
       THREE.ColorManagement.enabled = prevCM
@@ -463,6 +538,18 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       <canvas ref={canvasRef} className="w-gl" />
       <div ref={barRef} className="w-bar" />
       <div ref={hoverRef} className="w-hover" />
+      {REGIONS.map((r, i) => (
+        <div key={r.id} className={`w-region ${r.tier}`} ref={(el) => { regionEls.current[i] = el }}>{r.name}</div>
+      ))}
+      <div ref={whereRef} className="w-where" />
+      <div className="w-compass" aria-hidden="true" title="북쪽">
+        <svg ref={compassRef} viewBox="0 0 48 48">
+          <circle cx="24" cy="24" r="21" fill="rgba(5,11,20,.28)" stroke="rgba(239,230,207,.4)" strokeWidth="1" />
+          <polygon points="24,13 28.5,24 19.5,24" fill="#f2c879" />
+          <polygon points="24,35 28.5,24 19.5,24" fill="rgba(239,230,207,.35)" />
+          <text x="24" y="10.5" textAnchor="middle" fontSize="8" fontFamily="'Noto Serif KR', serif" fill="#f2c879">N</text>
+        </svg>
+      </div>
       <div className="w-help">드래그해서 시점 돌리기 · 더블클릭하면 원래대로<br />지도의 빛을 누르면 안내가 열려요</div>
       {STOPS.map((s, i) => (
         <div key={s.id} className="w-pin" ref={(el) => { pinEls.current[i] = el }}>
