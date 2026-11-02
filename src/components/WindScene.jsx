@@ -9,7 +9,7 @@ import { REGIONS } from '../data/regions'
 
 // 제주 3D 바람 장면. 스크롤 위치에 따라 카메라가 움직이고(섹션의 data-cam 사용),
 // wind({speed, dir})와 stations(관측 지점 배열)가 바뀌면 바람장을 다시 계산한다.
-// markers: [{ x, z, kind: 'tour' | 'food', selected }] — 주변 명소·맛집을 작은 빛점으로 표시(선택된 것은 크게)
+// markers: [{ x, z, kind: 'tour' | 'food' | 'oreum', selected }] — 주변 명소·맛집을 작은 빛점으로 표시(선택된 것은 크게)
 // focus: {x, z} 이면 스크롤 카메라 대신 그 지점을 가까이서 비춘다 (장소 상세를 열었을 때)
 // onPickMarker(id): 지도의 명소·맛집 빛을 눌렀을 때, onPickStop(id): 영등 여정 장소(금빛 기둥)를 눌렀을 때
 // 마우스 왼쪽 버튼으로 드래그하면 시점을 돌려 볼 수 있다 (더블클릭하면 원래 시점, 스크롤하면 자동 복귀)
@@ -250,7 +250,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       g.fillStyle = gr; g.fillRect(0, 0, 32, 32)
       return new THREE.CanvasTexture(c)
     }
-    const markerTex = { tour: makeGlow('127,227,214'), food: makeGlow('255,159,107'), sel: makeGlow('255,240,190') }
+    const markerTex = { tour: makeGlow('127,227,214'), food: makeGlow('255,159,107'), oreum: makeGlow('190,240,150'), sel: makeGlow('255,240,190') }
     const markerGroup = new THREE.Group()
     scene.add(markerGroup)
     function setMarkers(list) {
@@ -259,7 +259,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       for (const m of list) {
         const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: m.selected ? markerTex.sel : markerTex[m.kind] ?? markerTex.tour, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }))
         s.position.set(m.x, Math.max(heightAt(m.x, m.z), 0) + (m.selected ? 1.1 : 0.7), m.z)
-        const size = m.selected ? 3.2 : 1.1
+        const size = m.selected ? (m.kind === 'oreum' ? 1.7 : 3.2) : m.kind === 'oreum' ? 0.62 : 1.1 // 오름은 작고 옅은 점
         s.scale.set(size, size, 1)
         markerGroup.add(s)
       }
@@ -579,6 +579,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       glowTex.dispose()
       markerTex.tour.dispose()
       markerTex.food.dispose()
+      markerTex.oreum.dispose()
       markerTex.sel.dispose()
       clearTimeout(whereTimer)
       sceneApi.current = null

@@ -4,6 +4,7 @@ import WindScene from '../components/WindScene'
 import RoutePanel from '../components/RoutePanel'
 import { useAppStore } from '../store/useAppStore'
 import { useRouteLine } from '../hooks/useCourseRoute'
+import { useOreums } from '../hooks/useOreums'
 import { llToXZ } from '../lib/geo'
 import StorySection from '../components/StorySection'
 import StoryPhoto from '../components/StoryPhoto'
@@ -50,6 +51,8 @@ export default function Home() {
   const [wind, setWind] = useState({ speed: 11, dir: 315 })
   const sound = useWindSound(wind)
   const [labelsOn, setLabelsOn] = useState(true) // 지도 지명 표시 (기본 켜짐, 옅게)
+  const [oreumOn, setOreumOn] = useState(true)   // 오름 점 표시 (제주오름요약설명 90곳)
+  const { items: oreums } = useOreums()
   const yd = useMemo(() => nextYeongdeung(), [])
 
   // 동선 안내: 영등 여정(한수리→칠머리당→우도) 또는 바람따라에서 만든 내 코스를 3D 지도 위에 그린다 (?route=course 로 바로 열기)
@@ -89,6 +92,10 @@ export default function Home() {
   }
   // 지도(3D)에서 빛을 눌렀을 때: 그 장소를 찾아 상세 패널로 연다 / 여정 기둥이면 그 장면으로 스크롤한다
   const pickMarker = (id) => {
+    if (String(id).startsWith('o:')) {
+      const o = oreums.find((x) => x.id === id)
+      return o && openPlace(o, 'oreum')
+    }
     for (const s of STOPS) {
       for (const kind of ['tour', 'food']) {
         const place = nearby[s.id][kind].find((p) => p.id === id)
@@ -110,10 +117,13 @@ export default function Home() {
   const selectedId = panelOpen ? sel?.place.id : null
   const focus = panelOpen && sel ? { x: sel.place.x, z: sel.place.z } : null
 
-  const markers = useMemo(() => STOPS.flatMap((s) => [
+  const markers = useMemo(() => [
+    ...(oreumOn ? oreums.map((o) => ({ id: o.id, title: o.title, x: o.x, z: o.z, kind: 'oreum', selected: o.id === selectedId })) : []),
+    ...STOPS.flatMap((s) => [
     ...nearby[s.id].tour.map((p) => ({ id: p.id, title: p.title, x: p.x, z: p.z, kind: 'tour', selected: p.id === selectedId })),
     ...nearby[s.id].food.map((p) => ({ id: p.id, title: p.title, x: p.x, z: p.z, kind: 'food', selected: p.id === selectedId })),
-  ]), [nearby, selectedId])
+    ]),
+  ], [nearby, selectedId, oreums, oreumOn])
   const realPlaces = useMemo(() => {
     const seen = new Set()
     return STOPS.flatMap((s) => (nearby[s.id].sample ? [] : nearby[s.id].tour.map((p) => ({ n: p.title, t: `${s.name} 근처`, x: p.x, z: p.z }))))
@@ -154,6 +164,9 @@ export default function Home() {
         </button>
         <button type="button" className={`w-btn${labelsOn ? ' on' : ''}`} onClick={() => setLabelsOn((v) => !v)} title="지도의 지명(제주시·서귀포시 등) 표시">
           <i className="bi bi-geo-alt me-1" />지명
+        </button>
+        <button type="button" className={`w-btn${oreumOn ? ' on' : ''}`} onClick={() => setOreumOn((v) => !v)} title="오름 표시 (제주오름요약설명 90곳)">
+          <i className="bi bi-triangle me-1" />오름
         </button>
         <button type="button" className={`w-btn${sound.on ? ' on' : ''}`} onClick={sound.toggle}>
           <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}

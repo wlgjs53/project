@@ -7,7 +7,7 @@
 | 배포 주소 | https://project-red-gamma-91.vercel.app |
 | GitHub | https://github.com/wlgjs53/project |
 | 주제 | 제주 문화 IP — **영등할망 / 칠머리당영등굿** |
-| 사용한 공공데이터 | 한국관광공사 TourAPI · 기상청 단기예보 · 국가유산청 국가유산 오픈API |
+| 사용한 공공데이터 | 한국관광공사 TourAPI · 기상청 단기예보 · 국가유산청 국가유산 오픈API · 제주오름요약설명(공공데이터포털) · (보조) OSRM 도로 경로 |
 
 ## 1. 기획 의도
 
@@ -47,6 +47,7 @@
 | 1 | **한국관광공사 국문 관광정보 서비스 (TourAPI)** | `locationBasedList2` `areaBasedList2` `searchKeyword2` `detailCommon2` `detailIntro2` `detailImage2` | 여정 장소 주변 명소·맛집(위치기반, 가까운 순), 검색, 장소 상세(소개·사진·이용 정보·공공누리 유형) |
 | 2 | **기상청 단기예보 조회서비스** | `getVilageFcst` | 제주시(격자 53,38)·서귀포시(52,33)의 풍속(WSD)·풍향(VEC)·기온·하늘·강수 → 3D 바람장(두 지점의 실제 값)과 추천 기준(두 지점의 평균) |
 | 3 | **국가유산청 국가유산 오픈API** (키 불필요) | `SearchKindOpenapiList.do` `SearchKindOpenapiDt.do` `SearchImageOpenapi.do` | 칠머리당영등굿 등 제주 국가유산의 목록·공식 설명·대표 사진·사진 갤러리 |
+| 4 | **제주특별자치도 제주오름요약설명** (공공데이터포털 파일데이터의 오픈API, 같은 인증키) | `api.odcloud.kr/api/15096996/v1/…` → `/api/oreum` | 오름 90곳의 이름·위치·표고·좌표·설명. 바람길 지도(홈)에 작은 점으로 표시하고, 점을 누르면 상세(표고·바람 안내·설명·근처 맛집)를 보여 줍니다 |
 
 그 밖의 데이터: 지형은 **AWS Open Data Terrain Tiles**(SRTM·NASADEM·GEBCO 등)의 고도 타일을 `scripts/build-dem.mjs`로 한 번 변환해 `src/data/jejuDem.js`에 넣었습니다(실행 중에는 외부 호출 없음).
 

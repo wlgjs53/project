@@ -4,6 +4,7 @@ import { fetchPlaceDetail } from '../api/client'
 import { exposure, exposureLabel, whyText } from '../lib/advice'
 import { useFavorites } from '../hooks/useFavorites'
 import { ErrorAlert, Loading } from './Status'
+import OreumBody from './OreumBody'
 
 const cache = new Map() // 같은 장소를 다시 열 때 서버를 또 부르지 않도록
 const KIND = { tour: '명소', food: '맛집' }
@@ -19,7 +20,7 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
   const [active, setActive] = useState(0)
 
   useEffect(() => {
-    if (!place) return
+    if (!place || sel.kind === 'oreum') return // 오름은 OreumBody 가 따로 불러온다
     setActive(0); setError('')
     if (place.sample) { setDetail(null); setLoading(false); return }
     const hit = cache.get(place.id)
@@ -47,7 +48,8 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
         <Offcanvas.Title className="fs-5 fw-bold">{place?.title}</Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body>
-        {place && (
+        {place && sel.kind === 'oreum' && <OreumBody place={place} wind={wind} />}
+        {place && sel.kind !== 'oreum' && (
           <>
             <div className="mb-2 d-flex flex-wrap gap-1">
               <Badge bg="secondary">{KIND[sel.kind]}</Badge>
