@@ -18,10 +18,10 @@ export default function Agent() {
 
   return (
     <>
-      <PageHeader icon="robot" title="AI 가이드" subtitle="공공데이터 API를 도구로 쓰는 에이전트" />
+      <PageHeader icon="robot" title="영등할망 가이드" subtitle="오늘의 바람과 공공데이터 API를 도구로 써서 명소·맛집 코스를 안내하는 에이전트" />
       <Card className="chat-box mb-3">
         <Card.Body>
-          {messages.length === 0 && <div className="text-muted">예) 내일 서귀포에 비 오면 해녀 문화를 볼 수 있는 실내 장소 추천해줘</div>}
+          {messages.length === 0 && <div className="text-muted">예) 오늘 바람이 센데 칠머리당 근처에서 바람을 피해 갈 만한 곳이랑 점심 먹을 곳 알려줘</div>}
           {messages.map((m, i) => (
             <div key={i} className={`msg ${m.role}`}>
               {m.steps?.length > 0 && (
