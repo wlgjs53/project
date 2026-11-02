@@ -10,7 +10,8 @@ import PlaceDetailPanel from '../components/PlaceDetailPanel'
 import { useWindSound } from '../hooks/useWindSound'
 import { useLiveWind } from '../hooks/useLiveWind'
 import { useNearby } from '../hooks/useNearby'
-import { fetchHeritage } from '../api/client'
+import YeongdeungIntro from '../components/YeongdeungIntro'
+import { fetchHeritage, fetchHeritageDetail } from '../api/client'
 import { nextYeongdeung } from '../lib/dday'
 import { PLACES, STOPS, ORIGIN_NOTE } from '../data/story'
 import '../styles/wind.css'
@@ -105,9 +106,16 @@ export default function Home() {
 
   // 스토리 카드 대표 사진: 맞이 = 국가유산청의 영등굿 사진, 입도·퇴도 = 근처 명소의 사진(TourAPI)
   const [gut, setGut] = useState(null)
+  const [gallery, setGallery] = useState([]) // "영등할망이란?" 장면에 쓸 영등굿 사진들 (국가유산청)
   useEffect(() => {
-    fetchHeritage('영등').then((l) => l[0]?.image && setGut({ src: l[0].image, caption: `${l[0].name} · 국가유산청` })).catch(() => {})
+    fetchHeritage('영등').then(async (l) => {
+      const h = l[0]
+      if (!h) return
+      if (h.image) setGut({ src: h.image, caption: `${h.name} · 국가유산청` })
+      try { setGallery((await fetchHeritageDetail(h)).images.slice(0, 4)) } catch { /* 사진 목록이 없으면 대표 사진 한 장만 쓴다 */ }
+    }).catch(() => {})
   }, [])
+  const introPhotos = gallery.length ? gallery : gut ? [{ url: gut.src, desc: '제주칠머리당영등굿' }] : []
   const heroOf = (id) => {
     const p = nearby[id].sample ? null : nearby[id].tour.find((x) => x.image)
     return p ? <StoryPhoto key={p.id} src={p.image} caption={`${p.title} · 한국관광공사`} /> : null
@@ -136,6 +144,10 @@ export default function Home() {
           <p>음력 2월, 바람의 신 영등할망이 제주에 들어와 보름 가까이 머물며 바다에 씨를 뿌리고 떠난다고 전해집니다. 지금 이 섬 위를 지나는 바람을 따라 그 여정을 걸어 보세요.</p>
           {yd.intro && <p className="gold">{yd.intro}</p>}
           <p className="hint">↓ SCROLL</p>
+        </StorySection>
+
+        <StorySection cam="0,32,40, 0,0,-2">
+          <YeongdeungIntro photos={introPhotos} />
         </StorySection>
 
         <StorySection cam="0,38,26, 0,0,0" right>

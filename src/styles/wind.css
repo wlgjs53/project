@@ -110,6 +110,18 @@
 .w-star:disabled { opacity: .35; cursor: not-allowed; }
 .w-card p.w-hint { font-size: 11px; color: var(--w-muted); margin: 6px 0 0; letter-spacing: .05em; }
 
+/* "영등할망이란?" — 갤러리 썸네일·영상 썸네일·세 줄 요약 */
+.w-thumbs { display: flex; gap: 6px; margin: 0 0 14px; }
+.w-thumb { position: relative; flex: 1 1 0; max-width: 74px; height: 44px; padding: 0; border: 1px solid var(--w-line); border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.06); cursor: pointer; opacity: .8; transition: opacity .15s, border-color .15s; }
+.w-thumb:hover { opacity: 1; }
+.w-thumb.on { border-color: var(--w-gold); opacity: 1; }
+.w-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.w-thumb.video i { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; background: rgba(5,11,20,.5); }
+.w-facts { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.w-facts li { font-size: 13.5px; line-height: 1.55; color: #cdd8e4; }
+.w-facts b { display: inline-block; min-width: 3.4em; margin-right: 6px; color: var(--w-gold); font-weight: 500; font-size: 12px; letter-spacing: .1em; }
+a.w-btn { display: inline-block; text-decoration: none; }
+
 /* 스토리 카드 대표 사진 */
 .w-photo { margin: -28px -30px 18px; border-radius: 18px 18px 0 0; overflow: hidden; position: relative; }
 .w-photo img { display: block; width: 100%; height: 170px; object-fit: cover; }

@@ -28,4 +28,11 @@ export const PLACES = [
   { n: '카멜리아힐', t: '남서 중산간', ...at(33.2889, 126.3698) },
 ]
 
+// 칠머리당영등굿 — UNESCO 공식 유튜브 영상 ("영등할망이란?" 장면에서 눌러야 재생)
+export const GUT_VIDEO = {
+  id: 'BZ1uIR0e0bo',
+  thumb: 'https://i.ytimg.com/vi/BZ1uIR0e0bo/default.jpg',
+  page: 'https://ich.unesco.org/en/RL/jeju-chilmeoridang-yeongdeunggut-00187',
+}
+
 export const ORIGIN_NOTE = '※ 전승은 지역과 문헌에 따라 조금씩 다릅니다.'
