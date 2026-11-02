@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button } from 'react-bootstrap'
 import { fetchNearby } from '../api/client'
+import OreumImg from './OreumImg'
 import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { kakaoTo } from '../lib/nav'
@@ -49,7 +50,14 @@ export default function OreumBody({ place, wind }) {
       <div className="small text-muted mb-2">{place.addr}</div>
 
       {extra?.photo?.image ? (
-        <img src={extra.photo.image} alt={place.title} className="w-100 rounded mb-2" style={{ height: 150, objectFit: 'cover' }} />
+        <figure className="mb-2">
+          <OreumImg photo={extra.photo} alt={place.title} className="w-100 rounded" style={{ height: 150, objectFit: 'cover' }} />
+          <figcaption className="small text-muted mt-1">
+            {extra.photo.source
+              ? <>사진 출처: <a href={extra.photo.source.url} target="_blank" rel="noopener noreferrer">{extra.photo.source.site} 원문 ↗</a> (검색 결과)</>
+              : '사진: 한국관광공사'}
+          </figcaption>
+        </figure>
       ) : extra && (
         <div className="d-flex align-items-center gap-2 rounded mb-2 px-3 py-2 small text-muted" style={{ background: 'var(--bs-secondary-bg)' }}>
           <i className="bi bi-image fs-5" />
@@ -80,7 +88,7 @@ export default function OreumBody({ place, wind }) {
       <Button size="sm" variant="outline-secondary" href={kakaoTo(place)} target="_blank" rel="noopener noreferrer" className="mb-3">
         <i className="bi bi-signpost-split me-1" />길찾기
       </Button>
-      <p className="small text-muted mb-0">출처: 제주특별자치도 제주오름요약설명(공공데이터포털){extra?.photo ? ' · 사진 한국관광공사' : ''}{extra?.foods.length ? ' · 맛집 한국관광공사 TourAPI' : ''}</p>
+      <p className="small text-muted mb-0">출처: 제주특별자치도 제주오름요약설명(공공데이터포털){extra?.foods.length ? ' · 맛집 한국관광공사 TourAPI' : ''}</p>
     </>
   )
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Badge, Button, Col, Offcanvas, Row } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
 import OreumBody from '../components/OreumBody'
+import OreumImg from '../components/OreumImg'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { useOreums } from '../hooks/useOreums'
 import { useWindForecast } from '../hooks/useWindForecast'
@@ -111,7 +112,7 @@ export default function Oreum() {
                   <Col key={o.id}>
                     <div className="oreum-card" role="button" onClick={() => setSel(o)}>
                       <div className="oreum-img">
-                        {o.photo?.image ? <img src={o.photo.thumb || o.photo.image} alt={o.title} loading="lazy" /> : <HillArt height={o.height} />}
+                        {o.photo?.image ? <OreumImg photo={o.photo} alt={o.title} /> : <HillArt height={o.height} />}
                         <Badge bg={o.tag.bg} text={o.tag.bg === 'warning' ? 'dark' : undefined} className="oreum-tag">{o.tag.text}</Badge>
                       </div>
                       <div className="p-3">

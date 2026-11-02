@@ -49,7 +49,8 @@
 | 2 | **기상청 단기예보 조회서비스** | `getVilageFcst` | 제주시(격자 53,38)·서귀포시(52,33)의 풍속(WSD)·풍향(VEC)·기온·하늘·강수 → 3D 바람장(두 지점의 실제 값)과 추천 기준(두 지점의 평균) |
 | 3 | **국가유산청 국가유산 오픈API** (키 불필요) | `SearchKindOpenapiList.do` `SearchKindOpenapiDt.do` `SearchImageOpenapi.do` | 칠머리당영등굿 등 제주 국가유산의 목록·공식 설명·대표 사진·사진 갤러리 |
 | 4 | **제주특별자치도 제주오름요약설명** (공공데이터포털 파일데이터의 오픈API, 같은 인증키) | `api.odcloud.kr/api/15096996/v1/…` → `/api/oreum` | 오름 90곳의 이름·위치·표고·좌표·설명. 바람길 지도(홈)에 작은 점으로 표시하고, 점을 누르면 상세(표고·바람 안내·설명·근처 맛집)를 보여 줍니다 |
-| 5 | **한국관광공사 관광사진정보** (`PhotoGalleryService1/gallerySearchList1`, 같은 인증키) | `scripts/build-oreum-photos.mjs` → `src/data/oreumPhotos.json` | 오름 이름으로 검색해 제목·촬영지에 이름이 들어 있는 사진만 골라 미리 저장(90회 호출을 화면마다 하지 않으려고). 21곳 + TourAPI 사진 합쳐 90곳 중 약 37곳에 사진이 있고, 나머지는 공개 자료에 사진이 없어 그림으로 표시합니다 |
+| 5 | **한국관광공사 관광사진정보** (`PhotoGalleryService1/gallerySearchList1`, 같은 인증키) | `scripts/build-oreum-photos.mjs` → `src/data/oreumPhotos.json` | 오름 이름으로 검색해 제목·촬영지에 이름이 들어 있는 사진만 골라 미리 저장(90회 호출을 화면마다 하지 않으려고). 21곳 + TourAPI 사진 합쳐 90곳 중 약 37곳이 공식 사진이고, 나머지는 아래 카카오 검색으로 채웁니다 |
+| (보조) | **카카오(다음) 이미지 검색 REST API** (`KAKAO_REST_KEY`, 로컬에서만 사용) | `scripts/build-oreum-kakao.mjs` → `src/data/oreumPhotosKakao.json` | 공식 자료에 사진이 없는 오름 53곳 중 52곳을 검색해 사진을 **직접 눈으로 확인하고 무관한 17장(앱 화면·음식·인물 등)을 뺀 35곳**만 저장. 그 결과 90곳 중 72곳에 사진이 있고 18곳은 그림으로 표시. 블로그·뉴스 등 원 저작자가 있는 검색 결과라 **출처 사이트와 원문 링크를 함께 표시**하며, 이름만으로 검색해 다른 장소의 사진일 수 있습니다. 키는 스크립트 실행 때만 쓰고 배포 환경에는 두지 않습니다 |
 
 그 밖의 데이터: 지형은 **AWS Open Data Terrain Tiles**(SRTM·NASADEM·GEBCO 등)의 고도 타일을 `scripts/build-dem.mjs`로 한 번 변환해 `src/data/jejuDem.js`에 넣었습니다(실행 중에는 외부 호출 없음).
 
