@@ -8,11 +8,11 @@ const ok = (p) => Number.isFinite(p.lat) && Number.isFinite(p.lng) && p.lat > 33
 function load(area) {
   if (!cache.has(area)) {
     const p = Promise.all([
-      fetchPlaces('', '12', area), fetchPlaces('', '14', area), fetchPlaces('', '39', area), fetchPlaces('해녀', '39', area),
-    ]).then(([s, i, f, h]) => {
+      fetchPlaces('', '12', area), fetchPlaces('', '14', area), fetchPlaces('', '39', area), fetchPlaces('해녀', '39', area), fetchPlaces('오름', '12', area),
+    ]).then(([s, i, f, h, o]) => {
       const seen = new Set()
       const foods = [...h.items, ...f.items].filter((x) => !seen.has(x.id) && seen.add(x.id))
-      return { sights: s.items.filter(ok), indoors: i.items.filter(ok), foods: foods.filter(ok) }
+      return { oreums: o.items.filter((x) => /오름|봉$/.test(x.title)).filter(ok), sights: s.items.filter(ok), indoors: i.items.filter(ok), foods: foods.filter(ok) }
     })
     cache.set(area, p.catch((e) => { cache.delete(area); throw e }))
   }

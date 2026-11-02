@@ -42,7 +42,7 @@ const toCandidate = (f, m) => (m && !m.failed && Number.isFinite(m.lat) && Numbe
   ? { id: f.item_id, title: f.title, type: m.type, lat: m.lat, lng: m.lng, image: m.image, addr: m.subtitle }
   : null)
 
-// 바람따라 — 오늘의 바람에 맞춰 "어디를 어떤 순서로, 어떻게 갈지"를 정해 준다.
+// 할망따라 — 오늘의 바람에 맞춰 "어디를 어떤 순서로, 어떻게 갈지"를 정해 준다.
 //   · 내 즐겨찾기로: 담아 둔 곳들을 바람에 맞는 순서로 엮는다
 //   · 오늘의 추천: 즐겨찾기가 없어도 오늘 바람에 맞는 곳을 골라 코스를 만든다
 // 이동 시간·거리·경로선은 실제 도로(OSRM) 기준이고, 길안내(내비·대중교통)는 카카오맵으로 이어 준다.
@@ -58,6 +58,7 @@ export default function Course() {
   const [mode, setMode] = useState(null)      // null = 즐겨찾기가 있으면 "내 즐겨찾기로", 없으면 "오늘의 추천"
   const [area, setArea] = useState('jeju')
   const [variant, setVariant] = useState(0)
+  const [theme, setTheme] = useState('wind') // 오늘의 추천 주제: 'wind' 바람 맞춤 / 'oreum' 오름 코스
   const [chosen, setChosen] = useState(null)  // 즐겨찾기 중 코스에 넣을 곳 (null = 처음 6곳)
   const [extras, setExtras] = useState([])    // 추천에서 "코스에 추가"한 곳
   const [active, setActive] = useState(null)
@@ -76,9 +77,9 @@ export default function Course() {
     [favorites, meta])
   const selIds = chosen ?? candidates.slice(0, MAX_PLACES).map((c) => c.id)
   const auto = useAutoPool(area, mine === 'auto')
-  const autoPlaces = useMemo(() => (auto.pool && enoughWind ? autoPick({ ...auto.pool, slots: day.slots, variant }) : []),
+  const autoPlaces = useMemo(() => (auto.pool && enoughWind ? autoPick({ ...auto.pool, sights: theme === 'oreum' && auto.pool.oreums.length >= 3 ? auto.pool.oreums : auto.pool.sights, slots: day.slots, variant }) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [auto.pool, enoughWind, variant, forecast.slots])
+    [auto.pool, enoughWind, variant, theme, forecast.slots])
   const base = mine === 'mine' ? candidates.filter((c) => selIds.includes(c.id)) : autoPlaces
   const places = useMemo(() => {
     const ids = new Set(base.map((p) => p.id))
@@ -127,7 +128,7 @@ export default function Course() {
 
   async function copy() {
     const s = course.summary
-    const lines = [`바람따라 코스 (${day.label} ${hhmm(s.from)}~${hhmm(s.to)})`,
+    const lines = [`할망따라 코스 (${day.label} ${hhmm(s.from)}~${hhmm(s.to)})`,
       ...course.steps.map((st, i) => `${i + 1}. ${hhmm(st.arrive)} ${st.place.title} — ${st.reason}`)]
     try { await navigator.clipboard.writeText(lines.join('\n')); toast('코스를 복사했어요') }
     catch { toast('복사하지 못했어요', 'danger') }
@@ -138,7 +139,7 @@ export default function Course() {
 
   return (
     <>
-      <PageHeader icon="signpost-split" title="바람따라" subtitle="오늘의 바람에 맞춰, 어디를 어떤 순서로 어떻게 갈지 정해 드려요" />
+      <PageHeader icon="signpost-split" title="할망따라" subtitle="오늘의 바람에 맞춰, 어디를 어떤 순서로 어떻게 갈지 정해 드려요" />
 
       {favLoading || forecast.loading ? <Loading /> : (
         <>
@@ -192,6 +193,10 @@ export default function Course() {
               {[['jeju', '제주시 쪽'], ['seogwipo', '서귀포시 쪽']].map(([k, label]) => (
                 <button key={k} type="button" className={`course-chip ${area === k ? 'on' : ''}`} onClick={() => { setArea(k); setVariant(0); setExtras([]) }}><span>{label}</span></button>
               ))}
+              <span className="vr mx-1" />
+              {[['wind', '바람 맞춤'], ['oreum', '오름 코스']].map(([k, label]) => (
+                <button key={k} type="button" className={`course-chip ${theme === k ? 'on' : ''}`} onClick={() => { setTheme(k); setVariant(0); setExtras([]) }}><span>{label}</span></button>
+              ))}
               <Button variant="outline-primary" size="sm" className="ms-auto" disabled={auto.loading} onClick={() => { setVariant((v) => v + 1); setExtras([]) }}>
                 <i className="bi bi-shuffle me-1" />다른 코스
               </Button>
@@ -244,7 +249,7 @@ export default function Course() {
                             <div className="course-body">
                               <div className="d-flex flex-wrap align-items-center gap-1 mb-1">
                                 <b>{hhmm(s.arrive)}</b><small className="text-muted me-1">~{hhmm(s.depart)}</small>
-                                <Badge bg="secondary">{KIND_LABEL[s.kind]}</Badge>
+                                <Badge bg={/오름/.test(s.place.title) ? 'success' : 'secondary'}>{/오름/.test(s.place.title) ? '오름' : KIND_LABEL[s.kind]}</Badge>
                                 {s.kind === 'sight' && exposureLabel(s.e) && <Badge bg={s.e > 0 ? 'warning' : 'info'} text="dark">{exposureLabel(s.e)}</Badge>}
                               </div>
                               <div className="fw-bold">{s.place.title}</div>

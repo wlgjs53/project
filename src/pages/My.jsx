@@ -23,7 +23,7 @@ export default function My() {
       <div className="d-flex flex-wrap gap-2 align-items-center mb-4">
         <Form.Control style={{ maxWidth: 320 }} placeholder="닉네임" value={nickname} onChange={(e) => setNickname(e.target.value)} />
         {favorites.length > 0 && (
-          <Link to="/course" className="btn btn-primary"><i className="bi bi-signpost-split me-1" />바람따라 코스 만들기</Link>
+          <Link to="/course" className="btn btn-primary"><i className="bi bi-signpost-split me-1" />할망따라 코스 만들기</Link>
         )}
         {favorites.length > 0 && (
           <ConfirmButton className="ms-auto" size="md" label={`전체 삭제 (${favorites.length})`}

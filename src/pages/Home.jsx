@@ -55,7 +55,7 @@ export default function Home() {
   const { items: oreums } = useOreums()
   const yd = useMemo(() => nextYeongdeung(), [])
 
-  // 동선 안내: 영등 여정(한수리→칠머리당→우도) 또는 바람따라에서 만든 내 코스를 3D 지도 위에 그린다 (?route=course 로 바로 열기)
+  // 동선 안내: 영등 여정(한수리→칠머리당→우도) 또는 할망따라에서 만든 내 코스를 3D 지도 위에 그린다 (?route=course 로 바로 열기)
   const [params] = useSearchParams()
   const courseStops = useAppStore((s) => s.courseStops)
   const [routeOpen, setRouteOpen] = useState(params.has('route'))
@@ -104,6 +104,18 @@ export default function Home() {
     }
   }
   const pickStop = (id) => document.querySelector(`[data-focus="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  // 바람따라 오름 페이지에서 "바람길 지도에서 보기"로 넘어오면(?oreum=o:abu) 그 오름을 비추고 상세를 연다
+  const wantOreum = params.get('oreum')
+  const openedOreum = useRef(false)
+  useEffect(() => {
+    if (openedOreum.current || !wantOreum || wantOreum === 'all' || !oreums.length) return
+    const o = oreums.find((x) => x.id === wantOreum)
+    if (!o) return
+    openedOreum.current = true
+    setSel({ place: o, kind: 'oreum' })
+    setSide('end')
+    setPanelOpen(true)
+  }, [wantOreum, oreums])
   // 패널이 열린 채로 페이지를 스크롤하면 다음 내용이 보이도록 패널을 닫는다 (카메라도 스크롤 장면으로 돌아감)
   useEffect(() => {
     if (!panelOpen) return

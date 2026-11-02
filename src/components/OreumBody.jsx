@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button } from 'react-bootstrap'
-import { fetchNearby, fetchPlaces } from '../api/client'
+import { fetchNearby } from '../api/client'
 import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { kakaoTo } from '../lib/nav'
+import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
 
-const cache = new Map() // 오름 이름 → { photo, foods }
+const cache = new Map() // 오름 id → { photo, foods }
 
 // 오름 상세(바람길 지도의 오름 점을 눌렀을 때): 표고·설명(제주오름요약설명) + 같은 이름의 TourAPI 사진 + 오름 근처 맛집
 export default function OreumBody({ place, wind }) {
@@ -17,10 +18,10 @@ export default function OreumBody({ place, wind }) {
     setExtra(null)
     let alive = true
     Promise.allSettled([
-      fetchPlaces(place.title, '12'),
+      loadOreumPhotos(),
       fetchNearby({ lat: place.lat, lng: place.lng, type: '39', radius: 6000, rows: 12 }),
     ]).then(([p, f]) => {
-      const photo = p.status === 'fulfilled' ? p.value.items.find((x) => x.title.replace(/\s/g, '').startsWith(place.title.replace(/\s/g, ''))) : null
+      const photo = p.status === 'fulfilled' ? findOreumPhoto(p.value, place) : null
       const foods = f.status === 'fulfilled' ? (f.value.items ?? f.value).filter((x) => x.image).slice(0, 3) : []
       const v = { photo, foods }
       cache.set(place.id, v)
@@ -47,7 +48,15 @@ export default function OreumBody({ place, wind }) {
       </div>
       <div className="small text-muted mb-2">{place.addr}</div>
 
-      {extra?.photo?.image && <img src={extra.photo.image} alt={place.title} className="w-100 rounded mb-2" style={{ maxHeight: 240, objectFit: 'cover' }} />}
+      {extra?.photo?.image ? (
+        <img src={extra.photo.image} alt={place.title} className="w-100 rounded mb-2" style={{ height: 150, objectFit: 'cover' }} />
+      ) : extra && (
+        <div className="d-flex align-items-center gap-2 rounded mb-2 px-3 py-2 small text-muted" style={{ background: 'var(--bs-secondary-bg)' }}>
+          <i className="bi bi-image fs-5" />
+          <span className="flex-grow-1">등록된 사진이 없는 오름이에요.</span>
+          <a href={`https://search.naver.com/search.naver?where=image&query=${encodeURIComponent(place.title)}`} target="_blank" rel="noopener noreferrer">사진 검색 ↗</a>
+        </div>
+      )}
 
       <div className="w-why mb-3">
         <b><i className="bi bi-wind me-1" />바람 따라 걷기</b>

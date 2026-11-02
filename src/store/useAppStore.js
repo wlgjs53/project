@@ -74,7 +74,7 @@ export const useAppStore = create(
         set({ favorites: get().favorites.filter((f) => !gone.has(f.id)) })
         get().toast(`즐겨찾기 ${data.length}곳을 뺐어요`)
       },
-      // 가장 최근에 만든 바람따라 코스의 장소들 — 바람길 지도의 "동선 안내"가 이어서 보여 준다
+      // 가장 최근에 만든 할망따라 코스의 장소들 — 바람길 지도의 "동선 안내"가 이어서 보여 준다
       courseStops: [],
       setCourseStops: (courseStops) => set({ courseStops }),
       // 별을 누를 때: 이미 있으면 빼고, 없으면 저장

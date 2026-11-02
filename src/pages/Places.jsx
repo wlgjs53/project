@@ -8,9 +8,9 @@ import { useFavorites } from '../hooks/useFavorites'
 
 // 탭마다 보여 줄 종류와 추천 검색어 (결과가 실제로 나오는 것만 — TourAPI 검색은 이름에 포함된 글자로 찾는다)
 const TABS = [
-  { type: '12', label: '명소', placeholder: '예: 오름', chips: ['오름', '해녀'] },
-  { type: '39', label: '맛집', placeholder: '예: 해녀의집', chips: ['해녀의집', '흑돼지', '갈치', '보말', '국수', '전복', '카페'] },
-  { type: '14', label: '문화시설', placeholder: '검색어', chips: [] },
+  { key: '12', type: '12', label: '명소', placeholder: '예: 해녀', chips: ['해녀', '해변', '폭포'] },
+  { key: '39', type: '39', label: '맛집', placeholder: '예: 해녀의집', chips: ['해녀의집', '흑돼지', '갈치', '보말', '국수', '전복', '카페'] },
+  { key: '14', type: '14', label: '문화시설', placeholder: '검색어', chips: [] },
 ]
 const AREAS = [{ v: '', label: '전체' }, { v: 'jeju', label: '제주시' }, { v: 'seogwipo', label: '서귀포시' }]
 const PAGE = 24 // 한 번에 보여 주는 개수 ("더 보기"로 이어서)
@@ -26,17 +26,18 @@ export default function Places() {
   const [error, setError] = useState('')
   const [shown, setShown] = useState(PAGE)
 
-  const cur = TABS.find((t) => t.type === tab)
+  const cur = TABS.find((t) => t.key === tab)
 
   // 종류·지역·검색어가 바뀔 때마다 사진이 있는 곳만 다시 불러온다
   useEffect(() => {
     let alive = true
     setLoading(true); setError('')
-    fetchPlaces(q, tab, area)
+    fetchPlaces(q || cur.base || '', cur.type, area)
       .then((d) => { if (alive) { setData(d); setShown(PAGE) } })
       .catch((e) => alive && setError(e.message))
       .finally(() => alive && setLoading(false))
     return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, tab, area])
 
   function pickTab(t) { setTab(t); setInput(''); setQ('') }
@@ -51,7 +52,7 @@ export default function Places() {
 
       <Nav variant="pills" activeKey={tab} onSelect={(k) => k && pickTab(k)} className="mb-3">
         {TABS.map((t) => (
-          <Nav.Item key={t.type}><Nav.Link eventKey={t.type}>{t.label}</Nav.Link></Nav.Item>
+          <Nav.Item key={t.key}><Nav.Link eventKey={t.key}>{t.label}</Nav.Link></Nav.Item>
         ))}
       </Nav>
 

@@ -22,8 +22,8 @@ export default function RoutePanel({ kind, kinds, onKind, stops, legs, loading, 
 
       {stops.length < 2 ? (
         <p className="small opacity-75 mb-0">
-          아직 만든 코스가 없어요. 바람따라에서 코스를 만들면 여기서 3D 지도로 동선을 볼 수 있어요.
-          <Link to="/course" className="w-btn sm mt-2 d-inline-block">바람따라 코스 만들기</Link>
+          아직 만든 코스가 없어요. 할망따라에서 코스를 만들면 여기서 3D 지도로 동선을 볼 수 있어요.
+          <Link to="/course" className="w-btn sm mt-2 d-inline-block">할망따라 코스 만들기</Link>
         </p>
       ) : (
         <>

@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Check from './pages/Check'
 import Course from './pages/Course'
 import Places from './pages/Places'
+import Oreum from './pages/Oreum'
 import Heritage from './pages/Heritage'
 import Agent from './pages/Agent'
 import My from './pages/My'
@@ -16,10 +17,11 @@ import NotFound from './pages/NotFound'
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house' },
   { to: '/places', label: '명소·맛집', icon: 'geo-alt' },
+  { to: '/oreum', label: '바람따라 오름', icon: 'triangle' },
   { to: '/heritage', label: '영등굿·유산', icon: 'bank' },
   { to: '/agent', label: '영등할망 가이드', icon: 'robot' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
-  { to: '/course', label: '바람따라', icon: 'signpost-split' },
+  { to: '/course', label: '할망따라', icon: 'signpost-split' },
 ]
 
 export const router = createBrowserRouter([
@@ -31,6 +33,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'check', element: <Check /> },   // 개발용 동작 체크 (메뉴에는 없음)
       { path: 'places', element: <Places /> },
+      { path: 'oreum', element: <Oreum /> },
       { path: 'heritage', element: <Heritage /> },
       { path: 'agent', element: <Agent /> },
       { path: 'my', element: <My /> },
