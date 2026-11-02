@@ -29,8 +29,11 @@ export const PLACES = [
 ]
 
 // 칠머리당영등굿 — UNESCO 공식 유튜브 영상 ("영등할망이란?" 장면에서 눌러야 재생)
+// start·end: 핵심 구간만 재생(초). 파일을 복사하지 않고 유튜브 임베드의 시간 설정만 쓴다. 0:36 ~ 1:55
 export const GUT_VIDEO = {
   id: 'BZ1uIR0e0bo',
+  start: 36,
+  end: 115,
   thumb: 'https://i.ytimg.com/vi/BZ1uIR0e0bo/default.jpg',
   page: 'https://ich.unesco.org/en/RL/jeju-chilmeoridang-yeongdeunggut-00187',
 }

@@ -146,7 +146,7 @@ export default function Home() {
           <p className="hint">↓ SCROLL</p>
         </StorySection>
 
-        <StorySection cam="0,32,40, 0,0,-2">
+        <StorySection cam="0,32,40, 0,0,-2" solid>
           <YeongdeungIntro photos={introPhotos} />
         </StorySection>
 

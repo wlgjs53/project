@@ -110,13 +110,37 @@
 .w-star:disabled { opacity: .35; cursor: not-allowed; }
 .w-card p.w-hint { font-size: 11px; color: var(--w-muted); margin: 6px 0 0; letter-spacing: .05em; }
 
+/* 읽는 장면(solid): 더 진한 배경 + 큰 글자 + 밝은 글자색 — 뒤의 지도·바람선이 비쳐도 또렷하게 */
+.w-card.solid { max-width: 510px; background: rgba(5,11,20,.86); border-color: rgba(255,255,255,.16); box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.w-card.solid .step { font-size: 13px; letter-spacing: .12em; }
+.w-card.solid h2 { font-size: clamp(25px, 3vw, 34px); color: #fff; }
+.w-card.solid .w-facts { gap: 10px; }
+.w-card.solid .w-facts li { font-size: 15px; line-height: 1.7; color: #eef3f8; }
+.w-card.solid .w-facts b { min-width: 3.7em; font-size: 13px; font-weight: 600; color: #f6d38c; }
+.w-card.solid p.foot { font-size: 12.5px; line-height: 1.65; color: #b8c6d4; }
+.w-card.solid .w-photo img { height: 140px; }
+
 /* "영등할망이란?" — 갤러리 썸네일·영상 썸네일·세 줄 요약 */
 .w-thumbs { display: flex; gap: 6px; margin: 0 0 14px; }
 .w-thumb { position: relative; flex: 1 1 0; max-width: 74px; height: 44px; padding: 0; border: 1px solid var(--w-line); border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.06); cursor: pointer; opacity: .8; transition: opacity .15s, border-color .15s; }
 .w-thumb:hover { opacity: 1; }
 .w-thumb.on { border-color: var(--w-gold); opacity: 1; }
 .w-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.w-thumb.video i { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; background: rgba(5,11,20,.5); }
+/* 영상 보기 칩(사진 위)과 영상 버튼(카드 아래) — 영상이 있다는 걸 놓치지 않게 */
+.w-chip { position: absolute; top: 12px; right: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 6px 13px 6px 8px; border: 0; border-radius: 999px; background: var(--w-gold); color: #3a2a05; font-size: 12.5px; font-weight: 600; cursor: pointer; animation: w-pulse 1.8s ease-out 3; }
+.w-chip i { font-size: 17px; line-height: 1; }
+.w-chip:hover { background: #ffdc96; }
+@keyframes w-pulse { 0% { box-shadow: 0 0 0 0 rgba(242,200,121,.6); } 100% { box-shadow: 0 0 0 14px rgba(242,200,121,0); } }
+.w-video-btn { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 8px 12px 8px 8px; border: 1px solid var(--w-gold); border-radius: 10px; background: rgba(242,200,121,.06); color: var(--w-ink); text-align: left; cursor: pointer; transition: background .15s; }
+.w-video-btn:hover { background: rgba(242,200,121,.14); }
+.w-video-thumb { position: relative; flex: 0 0 84px; height: 50px; border-radius: 6px; overflow: hidden; background: #1b2b38; display: flex; align-items: center; justify-content: center; }
+.w-video-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.w-video-thumb i { position: relative; font-size: 1.6rem; color: #fff; background: rgba(5,11,20,.45); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+.w-video-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.w-video-text b { font-size: 14.5px; font-weight: 500; color: #f6d38c; }
+.w-video-text small { font-size: 12px; color: #b8c6d4; }
+.w-video-btn > i { color: #f6d38c; font-size: 1.1rem; }
+@media (prefers-reduced-motion: reduce) { .w-chip { animation: none; } }
 .w-facts { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
 .w-facts li { font-size: 13.5px; line-height: 1.55; color: #cdd8e4; }
 .w-facts b { display: inline-block; min-width: 3.4em; margin-right: 6px; color: var(--w-gold); font-weight: 500; font-size: 12px; letter-spacing: .1em; }
