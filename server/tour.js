@@ -21,9 +21,12 @@ async function callTour(op, extra) {
   return !item ? [] : Array.isArray(item) ? item : [item];
 }
 
+const https = (u) => String(u ?? '').trim().replace(/^http:/, 'https:'); // https 사이트에서 막히지 않도록
+
 const toPlace = (p) => ({
   id: p.contentid, title: p.title, addr: p.addr1,
-  image: (p.firstimage || '').replace(/^http:/, 'https:'), // https 사이트에서 막히지 않도록
+  image: https(p.firstimage),
+  thumb: https(p.firstimage2), // 목록용 작은 사진
   lng: Number(p.mapx), lat: Number(p.mapy), type: p.contenttypeid,
   dist: p.dist === undefined ? undefined : Number(p.dist), // 위치 검색일 때만: 기준점까지 거리(m)
 });
@@ -33,6 +36,41 @@ export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10
   if (contentTypeId) extra.contentTypeId = contentTypeId;
   if (keyword) extra.keyword = keyword;
   return (await callTour(keyword ? 'searchKeyword2' : 'areaBasedList2', extra)).map(toPlace);
+}
+
+// ── 장소 상세 (설명·사진·이용 정보) ─────────────────────────────
+const clean = (html) => String(html ?? '')
+  .replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
+  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+  .replace(/[ \t]+\n/g, '\n').trim();
+const hrefOf = (html) => String(html ?? '').match(/href=["']([^"']+)/i)?.[1] ?? '';
+
+// 콘텐츠 유형별로 보여 줄 이용 정보 항목 [응답 필드, 화면 이름]
+const INTRO_FIELDS = {
+  12: [['usetime', '이용시간'], ['restdate', '쉬는 날'], ['parking', '주차'], ['expguide', '체험 안내'], ['infocenter', '문의']],
+  14: [['usetimeculture', '이용시간'], ['restdateculture', '쉬는 날'], ['usefee', '이용요금'], ['parkingculture', '주차'], ['infocenterculture', '문의']],
+  15: [['eventstartdate', '시작일'], ['eventenddate', '종료일'], ['eventplace', '장소'], ['playtime', '공연시간'], ['usetimefestival', '이용요금']],
+  39: [['firstmenu', '대표 메뉴'], ['treatmenu', '취급 메뉴'], ['opentimefood', '영업시간'], ['restdatefood', '쉬는 날'], ['parkingfood', '주차'], ['reservationfood', '예약'], ['infocenterfood', '문의']],
+};
+
+// 공공누리 유형 표기 ("Type1" → "공공누리 제1유형")
+const nuri = (c) => { const n = /(\d)/.exec(String(c ?? ''))?.[1]; return n ? `공공누리 제${n}유형` : ''; };
+
+export async function getPlaceDetail({ id, type = '12' } = {}) {
+  const [common, intro, imgs] = await Promise.all([
+    callTour('detailCommon2', { contentId: id }),
+    callTour('detailIntro2', { contentId: id, contentTypeId: type }),
+    callTour('detailImage2', { contentId: id, imageYN: 'Y', numOfRows: '12' }),
+  ]);
+  const c = common[0] ?? {};
+  const i = intro[0] ?? {};
+  return {
+    id, type, title: c.title, addr: [c.addr1, c.addr2].filter(Boolean).join(' '),
+    tel: clean(c.tel), homepage: hrefOf(c.homepage), overview: clean(c.overview),
+    image: https(c.firstimage), copyright: nuri(c.cpyrhtDivCd),
+    images: imgs.map((m) => ({ url: https(m.originimgurl), thumb: https(m.smallimageurl || m.originimgurl), desc: clean(m.imgname) })),
+    info: (INTRO_FIELDS[type] ?? []).map(([k, label]) => [label, clean(i[k])]).filter(([, v]) => v),
+  };
 }
 
 // 좌표 주변 검색 (locationBasedList2). radius 단위는 m, 가까운 순(arrange=E)

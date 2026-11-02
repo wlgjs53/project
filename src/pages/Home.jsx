@@ -1,16 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import WindScene from '../components/WindScene'
 import StorySection from '../components/StorySection'
+import StoryPhoto from '../components/StoryPhoto'
 import WindMeter from '../components/WindMeter'
 import WindControls from '../components/WindControls'
 import PlaceList from '../components/PlaceList'
 import NearbyPanel from '../components/NearbyPanel'
+import PlaceDetailPanel from '../components/PlaceDetailPanel'
 import { useWindSound } from '../hooks/useWindSound'
 import { useLiveWind } from '../hooks/useLiveWind'
 import { useNearby } from '../hooks/useNearby'
+import { fetchHeritage } from '../api/client'
 import { nextYeongdeung } from '../lib/dday'
 import { PLACES, STOPS, ORIGIN_NOTE } from '../data/story'
 import '../styles/wind.css'
+
+// 화면이 좁으면(모바일) 상세 패널을 아래에서 올라오게 한다
+function useNarrow() {
+  const [narrow, setNarrow] = useState(() => innerWidth < 720)
+  useEffect(() => {
+    const on = () => setNarrow(innerWidth < 720)
+    addEventListener('resize', on)
+    return () => removeEventListener('resize', on)
+  }, [])
+  return narrow
+}
 
 // 홈 = 영등할망의 바람길 (스크롤하면 3D 제주 위를 날아가는 스토리)
 export default function Home() {
@@ -32,10 +46,20 @@ export default function Home() {
 
   // 영등 여정 3곳 주변의 명소·맛집 (TourAPI, 실패 시 자리표시)
   const nearby = useNearby(STOPS)
+
+  // 카드를 누르면: 상세 패널이 열리고, 3D 지도가 그 장소를 비춘다
+  const [sel, setSel] = useState(null) // { place, kind, stopId }
+  const [panelOpen, setPanelOpen] = useState(false)
+  const select = (stopId) => (place, kind) => { setSel({ place, kind, stopId }); setPanelOpen(true) }
+  const narrow = useNarrow()
+  const placement = narrow ? 'bottom' : sel?.stopId === 'chil' ? 'start' : 'end' // 스토리 카드의 반대편
+  const selectedId = panelOpen ? sel?.place.id : null
+  const focus = panelOpen && sel ? { x: sel.place.x, z: sel.place.z } : null
+
   const markers = useMemo(() => STOPS.flatMap((s) => [
-    ...nearby[s.id].tour.map((p) => ({ x: p.x, z: p.z, kind: 'tour' })),
-    ...nearby[s.id].food.map((p) => ({ x: p.x, z: p.z, kind: 'food' })),
-  ]), [nearby])
+    ...nearby[s.id].tour.map((p) => ({ x: p.x, z: p.z, kind: 'tour', selected: p.id === selectedId })),
+    ...nearby[s.id].food.map((p) => ({ x: p.x, z: p.z, kind: 'food', selected: p.id === selectedId })),
+  ]), [nearby, selectedId])
   const realPlaces = useMemo(() => {
     const seen = new Set()
     return STOPS.flatMap((s) => (nearby[s.id].sample ? [] : nearby[s.id].tour.map((p) => ({ n: p.title, t: `${s.name} 근처`, x: p.x, z: p.z }))))
@@ -43,13 +67,25 @@ export default function Home() {
   }, [nearby])
   const useReal = realPlaces.length >= 4
 
+  // 스토리 카드 대표 사진: 맞이 = 국가유산청의 영등굿 사진, 입도·퇴도 = 근처 명소의 사진(TourAPI)
+  const [gut, setGut] = useState(null)
+  useEffect(() => {
+    fetchHeritage('영등').then((l) => l[0]?.image && setGut({ src: l[0].image, caption: `${l[0].name} · 국가유산청` })).catch(() => {})
+  }, [])
+  const heroOf = (id) => {
+    const p = nearby[id].sample ? null : nearby[id].tour.find((x) => x.image)
+    return p ? <StoryPhoto key={p.id} src={p.image} caption={`${p.title} · 한국관광공사`} /> : null
+  }
+
   return (
     <div className="w-home">
-      <WindScene wind={wind} markers={markers} />
+      <WindScene wind={wind} markers={markers} focus={focus} />
       <WindMeter wind={wind} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
       <button type="button" className={`w-btn w-sound${sound.on ? ' on' : ''}`} onClick={sound.toggle}>
         <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}
       </button>
+
+      <PlaceDetailPanel sel={sel} show={panelOpen} wind={wind} placement={placement} onHide={() => setPanelOpen(false)} />
 
       <div className="w-story">
         <StorySection cam="0,26,50, 0,0,-2">
@@ -63,30 +99,31 @@ export default function Home() {
         <StorySection cam="0,38,26, 0,0,0" right>
           <span className="step">오늘의 바람</span>
           <h2>흐르는 선 하나하나가<br />제주를 지나는 바람입니다</h2>
-          <p>마우스(또는 손가락)로 화면을 휘저어 보세요. 아래 슬라이더는 샘플용이며, 실제 서비스에서는 기상청 실황 데이터가 이 값을 대신합니다.</p>
+          <p>마우스(또는 손가락)로 화면을 휘저어 보세요. 기상청 단기예보의 실제 바람이 적용되고, 아래 슬라이더로 다른 날의 바람도 체험해 볼 수 있어요.</p>
           <WindControls wind={wind} onChange={setWind} live={live} />
         </StorySection>
 
-        <StorySection cam="-41,8,10, -26,0,-3" focus="han">
+        <StorySection cam="-41,8,10, -26,0,-3" focus="han" photo={heroOf('han')}>
           <span className="step">1 · 입도</span>
           <h2>한림 한수리</h2>
           <p>전승에 따르면 영등할망은 바다 건너에서 제주 서쪽 해안, 한림읍 한수리 일대로 들어옵니다. 할망이 닿는 순간부터 제주 바다에 거센 바람이 불기 시작합니다.</p>
           <p className="hint">{ORIGIN_NOTE}</p>
-          <NearbyPanel data={nearby.han} wind={wind} />
+          <NearbyPanel data={nearby.han} wind={wind} selectedId={selectedId} onSelect={select('han')} />
         </StorySection>
 
-        <StorySection cam="-8,7,-31, -1,0.5,-15.5" focus="chil" right>
+        <StorySection cam="-8,7,-31, -1,0.5,-15.5" focus="chil" right
+          photo={gut ? <StoryPhoto src={gut.src} caption={gut.caption} /> : null}>
           <span className="step">2 · 맞이</span>
           <h2>건입동 칠머리당</h2>
           <p>제주시 건입동 칠머리당에서는 해녀와 어부들이 영등할망을 맞이하고 한 해의 안전과 풍요를 빕니다. 칠머리당영등굿은 2009년 유네스코 인류무형문화유산으로 등재되었습니다.</p>
-          <NearbyPanel data={nearby.chil} wind={wind} />
+          <NearbyPanel data={nearby.chil} wind={wind} selectedId={selectedId} onSelect={select('chil')} />
         </StorySection>
 
-        <StorySection cam="48,7,-1, 37,0,-14" focus="udo">
+        <StorySection cam="48,7,-1, 37,0,-14" focus="udo" photo={heroOf('udo')}>
           <span className="step">3 · 퇴도</span>
           <h2>우도</h2>
           <p>보름 무렵, 할망은 우도 쪽 바다로 제주를 떠난다고 알려져 있습니다. 떠나는 길에 뿌린 씨앗이 이듬해 바다의 풍요가 된다고 믿었습니다.</p>
-          <NearbyPanel data={nearby.udo} wind={wind} />
+          <NearbyPanel data={nearby.udo} wind={wind} selectedId={selectedId} onSelect={select('udo')} />
         </StorySection>
 
         <StorySection cam="0,40,3, 0,0,0" right wide>
@@ -114,7 +151,7 @@ export default function Home() {
           <span className="step">{yd.season ? '영등 시즌' : '다음 영등까지'}</span>
           <div className="w-dday">{yd.big}</div>
           <p>{yd.sub}</p>
-          <p className="foot">지형: AWS Terrain Tiles(SRTM·GEBCO 등) 고도 데이터이며 높이는 2.2배 과장했습니다. 신화·굿 설명은 국가유산청, 제주특별자치도 등 공식 자료로 검수한 뒤 출처를 표기하세요.</p>
+          <p className="foot">지형: AWS Terrain Tiles(SRTM·GEBCO 등) 고도 데이터를 바탕으로 높이를 과장해 표현했습니다. 영등굿 설명은 국가유산청 자료를 참고했으며, 전승은 지역과 문헌에 따라 다를 수 있습니다.</p>
         </StorySection>
       </div>
     </div>

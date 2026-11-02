@@ -1,20 +1,22 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { clamp, smooth, mulberry32, fbm } from '../lib/geo'
-import { terrainH } from '../lib/terrain'
+import { HAL, terrainH } from '../lib/terrain'
 import { DEM } from '../data/jejuDem'
 import { createWindField } from '../lib/windField'
 import { STOPS } from '../data/story'
 
 // 제주 3D 바람 장면. 스크롤 위치에 따라 카메라가 움직이고(섹션의 data-cam 사용),
 // wind({speed, dir})와 stations(관측 지점 배열)가 바뀌면 바람장을 다시 계산한다.
-// markers: [{ x, z, kind: 'tour' | 'food' }] — 주변 명소·맛집을 작은 빛점으로 표시
-export default function WindScene({ wind, stations = null, markers = [] }) {
+// markers: [{ x, z, kind: 'tour' | 'food', selected }] — 주변 명소·맛집을 작은 빛점으로 표시(선택된 것은 크게)
+// focus: {x, z} 이면 스크롤 카메라 대신 그 지점을 가까이서 비춘다 (장소 상세를 열었을 때)
+export default function WindScene({ wind, stations = null, markers = [], focus = null }) {
   const canvasRef = useRef(null)
   const barRef = useRef(null)
   const pinEls = useRef([])
   const windRef = useRef(wind)
   const markersRef = useRef(markers)
+  const focusRef = useRef(focus)
   const sceneApi = useRef(null)
   const field = useRef(null)
   if (!field.current) field.current = createWindField()
@@ -28,6 +30,8 @@ export default function WindScene({ wind, stations = null, markers = [] }) {
     markersRef.current = markers
     sceneApi.current?.setMarkers(markers)
   }, [markers])
+
+  useEffect(() => { focusRef.current = focus }, [focus])
 
   useEffect(() => {
     // three r128 시절 색감을 유지하기 위해 색 관리를 끄고 선형 출력을 쓴다 (밝기는 π 보정)
@@ -221,16 +225,17 @@ export default function WindScene({ wind, stations = null, markers = [] }) {
       g.fillStyle = gr; g.fillRect(0, 0, 32, 32)
       return new THREE.CanvasTexture(c)
     }
-    const markerTex = { tour: makeGlow('127,227,214'), food: makeGlow('255,159,107') }
+    const markerTex = { tour: makeGlow('127,227,214'), food: makeGlow('255,159,107'), sel: makeGlow('255,240,190') }
     const markerGroup = new THREE.Group()
     scene.add(markerGroup)
     function setMarkers(list) {
       for (const s of markerGroup.children) s.material.dispose()
       markerGroup.clear()
       for (const m of list) {
-        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: markerTex[m.kind] ?? markerTex.tour, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }))
-        s.position.set(m.x, Math.max(heightAt(m.x, m.z), 0) + 0.7, m.z)
-        s.scale.set(1.1, 1.1, 1)
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: m.selected ? markerTex.sel : markerTex[m.kind] ?? markerTex.tour, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }))
+        s.position.set(m.x, Math.max(heightAt(m.x, m.z), 0) + (m.selected ? 1.1 : 0.7), m.z)
+        const size = m.selected ? 3.2 : 1.1
+        s.scale.set(size, size, 1)
         markerGroup.add(s)
       }
     }
@@ -306,6 +311,15 @@ export default function WindScene({ wind, stations = null, markers = [] }) {
       last = now
       T += dt
       camTargets()
+      const f = focusRef.current
+      if (f) { // 장소 상세가 열려 있으면 그 지점을 가까이서 비춘다 (화면 가운데에 오도록 좌우 치우침 없음)
+        const gy = Math.max(heightAt(f.x, f.z), 0)
+        // 한라산 반대쪽(바다 쪽)에서 육지와 한라산을 바라보는 구도
+        const dx = f.x - HAL.x, dz = f.z - HAL.z, d = Math.hypot(dx, dz) || 1
+        wantPos.set(f.x + (dx / d) * 6.5, gy + 3.4, f.z + (dz / d) * 6.5)
+        wantTgt.set(f.x - (dx / d) * 2, gy + 1.0, f.z - (dz / d) * 2) // 장소보다 살짝 안쪽(육지 쪽)을 보게 해서 육지가 화면을 채우도록
+        wantSide = 0
+      }
       wantPos.x += mouse.nx * 1.6
       wantPos.y += -mouse.ny * 0.9
       const k = 1 - Math.exp(-dt * 2.6)
@@ -338,6 +352,7 @@ export default function WindScene({ wind, stations = null, markers = [] }) {
       glowTex.dispose()
       markerTex.tour.dispose()
       markerTex.food.dispose()
+      markerTex.sel.dispose()
       sceneApi.current = null
       renderer.dispose()
       THREE.ColorManagement.enabled = prevCM

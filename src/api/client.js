@@ -31,7 +31,9 @@ export const fetchPlaces = (keyword = '', type = '12') =>
 // 좌표 주변 관광지(12)·음식점(39) 등 — 가까운 순
 export const fetchNearby = ({ lat, lng, type = '12', radius = 5000, rows = 6 }) =>
   get(`/api/nearby?lat=${lat}&lng=${lng}&type=${type}&radius=${radius}&rows=${rows}`)
-export const fetchWeather =(place = '제주시') =>
+// 장소 하나의 상세(설명·사진·이용 정보) — 카드를 눌렀을 때만 부른다
+export const fetchPlaceDetail = ({ id, type = '12' }) => get(`/api/place?id=${id}&type=${type}`)
+export const fetchWeather = (place = '제주시') =>
   get(`/api/weather?place=${encodeURIComponent(place)}`)
 export const fetchHeritage = (keyword = '') =>
   get(`/api/heritage?keyword=${encodeURIComponent(keyword)}`)
