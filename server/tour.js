@@ -75,6 +75,7 @@ export async function getPlaceBrief({ id } = {}) {
     id, title: c.title, type: c.contenttypeid,
     addr: [c.addr1, c.addr2].filter(Boolean).join(' '),
     image: https(c.firstimage), thumb: https(c.firstimage2),
+    lng: Number(c.mapx), lat: Number(c.mapy), // 코스를 짤 때 거리 계산에 쓴다
   };
 }
 

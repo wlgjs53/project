@@ -36,8 +36,8 @@ export const fetchNearby = ({ lat, lng, type = '12', radius = 5000, rows = 6 }) 
 export const fetchPlaceDetail = ({ id, type = '12' }) => get(`/api/place?id=${id}&type=${type}`)
 // 이름·주소·사진만 (즐겨찾기 목록에서 사진을 다시 불러올 때)
 export const fetchPlaceBrief = (id) => get(`/api/place?id=${id}&brief=1`)
-export const fetchWeather = (place = '제주시') =>
-  get(`/api/weather?place=${encodeURIComponent(place)}`)
+export const fetchWeather = (place = '제주시', hours = 6) =>
+  get(`/api/weather?place=${encodeURIComponent(place)}&hours=${hours}`)
 export const fetchHeritage = (keyword = '') =>
   get(`/api/heritage?keyword=${encodeURIComponent(keyword)}`)
 // 국가유산 상세(공식 설명문·사진 여러 장) — 목록 항목의 kdcd/ctcd/asno 로 조회

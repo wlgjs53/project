@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import RootLayout from './layouts/RootLayout'
 import Home from './pages/Home'
 import Check from './pages/Check'
+import Course from './pages/Course'
 import Places from './pages/Places'
 import Heritage from './pages/Heritage'
 import Agent from './pages/Agent'
@@ -18,6 +19,7 @@ export const NAV_ITEMS = [
   { to: '/heritage', label: '영등굿·유산', icon: 'bank' },
   { to: '/agent', label: '영등할망 가이드', icon: 'robot' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
+  { to: '/course', label: '바람따라', icon: 'signpost-split' },
 ]
 
 export const router = createBrowserRouter([
@@ -32,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'heritage', element: <Heritage /> },
       { path: 'agent', element: <Agent /> },
       { path: 'my', element: <My /> },
+      { path: 'course', element: <Course /> },
     ],
   },
 ])
