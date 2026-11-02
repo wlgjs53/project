@@ -85,3 +85,5 @@ body { font-family: 'Pretendard', system-ui, sans-serif; background: #050b14; }
 .oreum-star { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(5, 11, 20, .6); color: #fff; }
 .oreum-star.on { color: #f2c879; }
 .chat-box .msg.error { background: rgba(255, 159, 107, .14); color: #ffb98f; }
+
+.my-basket { background: rgba(127, 227, 214, .08); border: 1px solid rgba(127, 227, 214, .25); }

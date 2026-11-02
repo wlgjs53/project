@@ -11,6 +11,7 @@ import { useFavorites } from '../hooks/useFavorites'
 import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
+import { currentWind } from '../lib/wind'
 
 const PAGE = 24
 const AREAS = [['', '전체'], ['제주시', '제주시'], ['서귀포시', '서귀포시']]
@@ -24,15 +25,6 @@ function feelOf(o, wind) {
   const feel = wind.speed * (1 + Math.min(o.height ?? 0, 500) / 700) * (e > 0.35 ? 1.2 : e < -0.35 ? 0.8 : 1)
   const tag = feel < 5 ? { text: '오르기 좋아요', bg: 'success' } : feel < 9 ? { text: '바람 적당', bg: 'warning' } : { text: '바람 조심', bg: 'danger' }
   return { e, feel, tag }
-}
-
-// 지금(또는 가장 가까운 예보 시각)의 바람
-function currentWind(slots) {
-  if (!slots.length) return null
-  const kst = new Date(Date.now() + 9 * 3600e3).toISOString()
-  const now = kst.slice(0, 10).replaceAll('-', '') + ' ' + kst.slice(11, 13) + '00'
-  const s = slots.filter((x) => x.time <= now).at(-1) ?? slots[0]
-  return { speed: s.speed, dir: s.dir }
 }
 
 // 표고에 비례하는 작은 산 그림 (사진이 없는 오름용)
