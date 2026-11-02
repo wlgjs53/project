@@ -4,12 +4,14 @@ import PageHeader from '../components/PageHeader'
 import ItemCard from '../components/ItemCard'
 import { Empty, Loading } from '../components/Status'
 import { useAppStore } from '../store/useAppStore'
+import { useFavoriteMeta } from '../hooks/useFavoriteMeta'
 
 const SOURCE = { tour: '명소·맛집', heritage: '국가유산' } // 저장된 출처 → 화면에 보일 이름
 
-// 즐겨찾기 — store 의 favorites 를 그대로 보여 주고, 카드의 삭제 버튼으로 뺄 수 있습니다 (STEP 5)
+// 즐겨찾기 — store 의 favorites 를 보여 주고, 사진·주소는 항목 번호로 다시 불러온다. 카드의 삭제 버튼으로 뺄 수 있습니다 (STEP 5)
 export default function My() {
   const { nickname, setNickname, favorites, favLoading, loadFavorites, removeFavorite } = useAppStore()
+  const meta = useFavoriteMeta(favorites)
 
   useEffect(() => { loadFavorites() }, [nickname, loadFavorites])
 
@@ -20,12 +22,16 @@ export default function My() {
         value={nickname} onChange={(e) => setNickname(e.target.value)} />
       {favLoading ? <Loading /> : favorites.length === 0 ? <Empty text="아직 저장한 항목이 없어요" /> : (
         <Row xs={1} sm={2} lg={3} className="g-3">
-          {favorites.map((f) => (
-            <Col key={f.id}>
-              <ItemCard title={f.title} badge={SOURCE[f.source] ?? f.source} subtitle={new Date(f.created_at).toLocaleString('ko-KR')}
-                onRemove={() => removeFavorite(f)} />
-            </Col>
-          ))}
+          {favorites.map((f) => {
+            const m = meta[`${f.source}:${f.item_id}`]
+            return (
+              <Col key={f.id}>
+                <ItemCard title={f.title} badge={SOURCE[f.source] ?? f.source} image={m?.image}
+                  subtitle={m?.subtitle} description={`저장: ${new Date(f.created_at).toLocaleString('ko-KR')}`}
+                  onRemove={() => removeFavorite(f)} />
+              </Col>
+            )
+          })}
         </Row>
       )}
     </>

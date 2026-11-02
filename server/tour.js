@@ -56,6 +56,16 @@ const INTRO_FIELDS = {
 // 공공누리 유형 표기 ("Type1" → "공공누리 제1유형")
 const nuri = (c) => { const n = /(\d)/.exec(String(c ?? ''))?.[1]; return n ? `공공누리 제${n}유형` : ''; };
 
+// 장소의 이름·주소·사진만 가볍게 (호출 1번). 즐겨찾기 목록처럼 id 만 알고 있을 때 쓴다.
+export async function getPlaceBrief({ id } = {}) {
+  const c = (await callTour('detailCommon2', { contentId: id }))[0] ?? {};
+  return {
+    id, title: c.title, type: c.contenttypeid,
+    addr: [c.addr1, c.addr2].filter(Boolean).join(' '),
+    image: https(c.firstimage), thumb: https(c.firstimage2),
+  };
+}
+
 export async function getPlaceDetail({ id, type = '12' } = {}) {
   const [common, intro, imgs] = await Promise.all([
     callTour('detailCommon2', { contentId: id }),
