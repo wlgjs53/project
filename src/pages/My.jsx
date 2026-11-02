@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Badge, Col, Form, Row } from 'react-bootstrap'
+import { Badge, Col, Row } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
 import ItemCard from '../components/ItemCard'
 import ConfirmButton from '../components/ConfirmButton'
@@ -24,7 +24,7 @@ const GROUPS = [
 const groupOf = (f, m) => (f.source === 'oreum' ? 'oreum' : f.source === 'heritage' ? 'heritage' : m?.type === '39' ? 'food' : 'sight')
 
 export default function My() {
-  const { nickname, setNickname, favorites, favLoading, loadFavorites, removeFavorite, removeFavorites } = useAppStore()
+  const { nickname, favorites, favLoading, loadFavorites, removeFavorite, removeFavorites } = useAppStore()
   const { meta } = useFavoriteMeta(favorites)
   const forecast = useWindForecast()
   const wind = currentWind(forecast.slots)
@@ -48,7 +48,7 @@ export default function My() {
   return (
     <>
       <PageHeader icon="star" title="내 즐겨찾기" subtitle="마음에 든 곳을 담아 두면 할망따라가 오늘의 바람에 맞는 코스로 엮어 줘요 — 닉네임별로 Supabase에 저장됩니다" />
-      <Form.Control className="mb-4" style={{ maxWidth: 320 }} placeholder="닉네임" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+      <p className="small text-muted mb-4"><i className="bi bi-person-circle me-1" />{nickname ? <>‘{nickname}’의 즐겨찾기예요.</> : <>닉네임을 정하지 않아 ‘익명’으로 저장돼요.</>} 닉네임은 오른쪽 위에서 바꿀 수 있어요.</p>
 
       {favLoading ? <Loading /> : favorites.length === 0 ? (
         <Empty text="아직 담은 곳이 없어요. 명소·맛집이나 바람따라 오름에서 ★를 눌러 보세요" />

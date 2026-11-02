@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Col, Form, InputGroup, Nav, Row } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
+import BasketLayout from '../components/BasketLayout'
 import ItemCard from '../components/ItemCard'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchPlaces } from '../api/client'
@@ -47,7 +48,7 @@ export default function Places() {
   const hidden = data.total - data.withImage // 사진이 없어 뺀 곳
 
   return (
-    <>
+    <BasketLayout>
       <PageHeader icon="geo-alt" title="명소·맛집" subtitle="영등할망의 길목에서 찾는 제주의 명소와 맛집 — 한국관광공사 TourAPI (사진이 있는 곳만 보여 드려요)" />
 
       <Nav variant="pills" activeKey={tab} onSelect={(k) => k && pickTab(k)} className="mb-3">
@@ -103,6 +104,6 @@ export default function Places() {
           )}
         </>
       )}
-    </>
+    </BasketLayout>
   )
 }

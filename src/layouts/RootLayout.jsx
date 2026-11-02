@@ -4,6 +4,7 @@ import { Container, Nav, Navbar, Toast, ToastContainer } from 'react-bootstrap'
 import { NAV_ITEMS } from '../router'
 import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
+import NicknameMenu from '../components/NicknameMenu'
 
 export default function RootLayout() {
   const toasts = useAppStore((s) => s.toasts)
@@ -30,9 +31,7 @@ export default function RootLayout() {
                 </Nav.Link>
               ))}
             </Nav>
-            {nickname && (
-              <Navbar.Text><i className="bi bi-person-circle me-1" />{nickname}</Navbar.Text>
-            )}
+            <NicknameMenu />
           </Navbar.Collapse>
         </Container>
       </Navbar>

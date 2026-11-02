@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
+import BasketLayout from '../components/BasketLayout'
 import ItemCard from '../components/ItemCard'
 import HeritageModal from '../components/HeritageModal'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
@@ -32,7 +33,7 @@ export default function Heritage() {
   const saved = (h) => isFav('heritage', h.name)
 
   return (
-    <>
+    <BasketLayout>
       <PageHeader icon="bank" title="영등굿·국가유산" subtitle="칠머리당영등굿을 비롯한 제주의 국가유산 — 국가유산청 오픈API" />
 
       {featured && (
@@ -78,6 +79,6 @@ export default function Heritage() {
       )}
 
       <HeritageModal item={open} saved={open ? saved(open) : false} onHide={() => setOpen(null)} onSave={save} />
-    </>
+    </BasketLayout>
   )
 }
