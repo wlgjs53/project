@@ -12,6 +12,7 @@ import { useAutoPool } from '../hooks/useAutoPool'
 import { useDistanceMatrix, useRouteLine } from '../hooks/useCourseRoute'
 import { fetchNearby } from '../api/client'
 import { useFavorites } from '../hooks/useFavorites'
+import FavStar from '../components/FavStar'
 import { KIND_LABEL, MAX_PLACES, autoPick, buildCourse, hhmm, kindOf, pickDay } from '../lib/course'
 import { exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
@@ -252,10 +253,7 @@ export default function Course() {
                           )}
                           <div ref={(el) => { cardRefs.current[i] = el }} className={`course-card ${active === i ? 'active' : ''}`} onClick={() => setActive(i)}>
                             <span className="course-no">{i + 1}</span>
-                            <button type="button" className={`course-star${isFav(favSource(s.place), s.place.id) ? ' on' : ''}`} aria-label="즐겨찾기" title="즐겨찾기에 담기"
-                              onClick={(e) => { e.stopPropagation(); toggleFav({ source: favSource(s.place), id: s.place.id, title: s.place.title }) }}>
-                              <i className={`bi bi-star${isFav(favSource(s.place), s.place.id) ? '-fill' : ''}`} />
-                            </button>
+                            <FavStar saved={isFav(favSource(s.place), s.place.id)} onToggle={() => toggleFav({ source: favSource(s.place), id: s.place.id, title: s.place.title })} />
                             {s.place.image && <img src={s.place.image} alt="" loading="lazy" />}
                             <div className="course-body">
                               <div className="d-flex flex-wrap align-items-center gap-1 mb-1">

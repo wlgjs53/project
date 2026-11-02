@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader'
 import BasketLayout from '../components/BasketLayout'
 import OreumBody from '../components/OreumBody'
 import OreumImg from '../components/OreumImg'
+import FavStar from '../components/FavStar'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { useOreums } from '../hooks/useOreums'
 import { useWindForecast } from '../hooks/useWindForecast'
@@ -108,9 +109,7 @@ export default function Oreum() {
                     <div className="oreum-card" role="button" onClick={() => setSel(o)}>
                       <div className="oreum-img">
                         {o.photo?.image ? <OreumImg photo={o.photo} alt={o.title} /> : <HillArt height={o.height} />}
-                        <button type="button" className={`oreum-star${isFav('oreum', o.id) ? ' on' : ''}`} aria-label="즐겨찾기" onClick={(e) => { e.stopPropagation(); toggle({ source: 'oreum', id: o.id, title: o.title }) }}>
-                          <i className={`bi bi-star${isFav('oreum', o.id) ? '-fill' : ''}`} />
-                        </button>
+                        <FavStar saved={isFav('oreum', o.id)} onToggle={() => toggle({ source: 'oreum', id: o.id, title: o.title })} />
                         <Badge bg={o.tag.bg} text={o.tag.bg === 'warning' ? 'dark' : undefined} className="oreum-tag">{o.tag.text}</Badge>
                       </div>
                       <div className="p-3">
