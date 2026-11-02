@@ -6,6 +6,7 @@ import WindMeter from '../components/WindMeter'
 import WindControls from '../components/WindControls'
 import PlaceList from '../components/PlaceList'
 import NearbyPanel from '../components/NearbyPanel'
+import ScrollCue from '../components/ScrollCue'
 import PlaceDetailPanel from '../components/PlaceDetailPanel'
 import { useWindSound } from '../hooks/useWindSound'
 import { useLiveWind } from '../hooks/useLiveWind'
@@ -134,6 +135,8 @@ export default function Home() {
           <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}
         </button>
       </div>
+
+      <ScrollCue />
 
       <PlaceDetailPanel sel={sel} show={panelOpen} wind={wind} placement={placement} onHide={() => setPanelOpen(false)} />
 

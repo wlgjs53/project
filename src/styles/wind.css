@@ -20,6 +20,16 @@
 .w-btn.on { background: rgba(127,227,214,.22); border-color: var(--w-accent); }
 .w-tools { position: fixed; top: 68px; right: clamp(16px, 3vw, 32px); z-index: 5; display: flex; gap: 8px; }
 
+/* 스크롤 안내: 오른쪽 가운데의 가는 선 + 작은 화살표(천천히 오르내림). 스크롤을 시작하면 사라진다 */
+.w-cue { position: fixed; right: clamp(14px, 2.4vw, 30px); top: 50%; z-index: 5; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 6px 4px; border: 0; background: none; color: #efe6cf; cursor: pointer; opacity: .9; transition: opacity .6s ease; text-shadow: 0 1px 8px rgba(0,0,0,.8); }
+.w-cue.hide { opacity: 0; pointer-events: none; }
+.w-cue .label { writing-mode: vertical-rl; font-size: 11px; letter-spacing: .4em; color: #cdd8e4; }
+.w-cue .line { width: 1px; height: 54px; background: linear-gradient(to bottom, transparent, rgba(239,230,207,.75)); }
+.w-cue i { font-size: 18px; line-height: 1; animation: w-bob 1.9s ease-in-out infinite; }
+@keyframes w-bob { 0%, 100% { transform: translateY(-2px); opacity: .55; } 50% { transform: translateY(6px); opacity: 1; } }
+.w-cue:hover { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .w-cue i { animation: none; } }
+
 /* 지명: 종이 지도의 글자처럼 — 박스 없이 옅은 크림색 글씨, 넓은 자간. 카드(z-index 2)보다 아래에 깔린다 */
 .w-region { position: fixed; left: 0; top: 0; z-index: 1; pointer-events: none; visibility: hidden; opacity: 0; white-space: nowrap; font-family: "Noto Serif KR", serif; color: #efe6cf; text-shadow: 0 1px 8px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.6); will-change: transform, opacity; }
 .w-region.major { font-size: 17px; font-weight: 500; letter-spacing: .55em; padding-left: .55em; }

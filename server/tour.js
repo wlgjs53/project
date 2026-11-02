@@ -38,6 +38,18 @@ export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10
   return (await callTour(keyword ? 'searchKeyword2' : 'areaBasedList2', extra)).map(toPlace);
 }
 
+// 목록 화면용: 한 번에 최대 500건을 받아(제주 음식점 전체가 388곳) **사진이 있는 곳만** 남긴다.
+// 화면에서 "더 보기"로 나눠 보여 주므로 쪽 나누기는 하지 않는다. area: '' 전체 | 'jeju' 제주시 | 'seogwipo' 서귀포시
+export async function listTour({ keyword = '', contentTypeId = '39', area = '' } = {}) {
+  const extra = { numOfRows: '500', areaCode: '39', contentTypeId }; // 39 = 제주
+  if (keyword) extra.keyword = keyword;
+  const all = (await callTour(keyword ? 'searchKeyword2' : 'areaBasedList2', extra)).map(toPlace);
+  const word = area === 'jeju' ? '제주시' : area === 'seogwipo' ? '서귀포시' : '';
+  const inArea = word ? all.filter((p) => (p.addr || '').includes(word)) : all; // "제주특별자치도 제주시 …" / "… 서귀포시 …"
+  const items = inArea.filter((p) => p.image); // 사진이 없는 곳은 뺀다
+  return { items, total: inArea.length, withImage: items.length };
+}
+
 // ── 장소 상세 (설명·사진·이용 정보) ─────────────────────────────
 const clean = (html) => String(html ?? '')
   .replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')

@@ -26,8 +26,9 @@ export async function post(path, body) {
 export const ping = () => get('/api/hello')
 
 // STEP 2~4: 공공데이터 API
-export const fetchPlaces = (keyword = '', type = '12') =>
-  get(`/api/tour?keyword=${encodeURIComponent(keyword)}&type=${type}`)
+// 사진이 있는 곳만: { items, total, withImage }.  area: '' 전체 | 'jeju' | 'seogwipo'
+export const fetchPlaces = (keyword = '', type = '12', area = '') =>
+  get(`/api/tour?keyword=${encodeURIComponent(keyword)}&type=${type}&area=${area}`)
 // 좌표 주변 관광지(12)·음식점(39) 등 — 가까운 순
 export const fetchNearby = ({ lat, lng, type = '12', radius = 5000, rows = 6 }) =>
   get(`/api/nearby?lat=${lat}&lng=${lng}&type=${type}&radius=${radius}&rows=${rows}`)
