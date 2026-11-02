@@ -1,0 +1,30 @@
+/* 테마 위에 덧입히는 우리 앱 스타일 — 색은 Bootstrap 변수(--bs-*)를 써서 테마를 바꿔도 어울리게 */
+:root { --bs-body-bg: #050b14; --bs-body-bg-rgb: 5, 11, 20; }
+body { font-family: 'Pretendard', system-ui, sans-serif; background: #050b14; }
+
+/* 상단 메뉴: 밤하늘 위에 떠 있는 반투명 바 */
+.app-nav {
+  background: rgba(5, 11, 20, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+.app-nav .navbar-brand { font-family: "Noto Serif KR", serif; font-weight: 700; }
+
+.hero {
+  background: linear-gradient(135deg, #0b3550, #1b6a73);
+  color: #fff;
+}
+.hero h1, .hero .lead { color: #fff; }
+
+.item-card { transition: transform .15s, box-shadow .15s; }
+.item-card:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.3); }
+.item-card-img { height: 160px; object-fit: cover; }
+.placeholder-img {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bs-secondary-bg); color: var(--bs-secondary-color); font-size: 2rem;
+}
+
+.chat-box .msg { max-width: 80%; padding: .6rem .9rem; border-radius: 1rem; margin-bottom: .5rem; }
+.chat-box .msg.assistant { background: var(--bs-secondary-bg); }
+.chat-box .msg.user { background: var(--bs-primary); color: #fff; margin-left: auto; }

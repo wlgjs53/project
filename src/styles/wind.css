@@ -1,0 +1,99 @@
+/* 영등할망의 바람길 (홈) — Bootstrap 과 겹치지 않도록 w- 접두사 사용 */
+.w-home {
+  --w-ink: #e8eef5; --w-muted: #9fb0c3; --w-accent: #7fe3d6; --w-gold: #f2c879; --w-line: rgba(255,255,255,.1);
+  color: var(--w-ink);
+  font-weight: 300;
+  line-height: 1.7;
+}
+.w-gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.w-bar { position: fixed; right: 0; top: 0; width: 3px; height: 0; background: linear-gradient(var(--w-accent), var(--w-gold)); z-index: 1040; }
+
+/* 버튼 */
+.w-btn {
+  font: inherit; font-size: 13px; color: var(--w-ink); background: rgba(255,255,255,.07);
+  border: 1px solid var(--w-line); border-radius: 999px; padding: 8px 16px; cursor: pointer; pointer-events: auto; transition: .2s;
+}
+.w-btn:hover { background: rgba(127,227,214,.18); border-color: var(--w-accent); }
+.w-btn.on { background: rgba(127,227,214,.22); border-color: var(--w-accent); }
+.w-sound { position: fixed; top: 68px; right: clamp(16px, 3vw, 32px); z-index: 5; }
+
+/* 풍속 표시 */
+.w-meter { position: fixed; left: clamp(16px, 3vw, 32px); bottom: 20px; z-index: 5; pointer-events: none; font-size: 13px; color: var(--w-muted); }
+.w-meter .big { font-family: "Noto Serif KR", serif; font-size: 34px; color: var(--w-ink); line-height: 1; }
+.w-meter .big em { font-style: normal; font-size: 13px; color: var(--w-muted); margin-left: 4px; }
+.w-meter .tag { display: inline-block; margin-top: 6px; font-size: 10px; letter-spacing: .12em; color: var(--w-gold); }
+
+/* 장소 핀 이름표 */
+.w-pin { position: fixed; left: 0; top: 0; z-index: 4; pointer-events: none; transform: translate(-50%, -100%); text-align: center; opacity: 0; transition: opacity .4s; white-space: nowrap; font-size: 13px; }
+.w-pin b { display: block; font-family: "Noto Serif KR", serif; font-weight: 700; font-size: 15px; text-shadow: 0 2px 12px #000; color: var(--w-ink); }
+.w-pin span { font-size: 11px; color: var(--w-gold); letter-spacing: .1em; }
+
+/* 스토리 */
+.w-story { position: relative; z-index: 2; pointer-events: none; }
+.w-sec { min-height: 100vh; display: flex; align-items: center; padding: 80px clamp(20px, 7vw, 110px); }
+.w-sec.r { justify-content: flex-end; }
+.w-card {
+  pointer-events: auto; max-width: 470px; background: rgba(5,11,20,.58); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--w-line); border-radius: 18px; padding: 28px 30px;
+}
+.w-card.wide { max-width: 760px; }
+.w-card h1, .w-card h2 { font-family: "Noto Serif KR", serif; font-weight: 700; line-height: 1.3; margin: 0 0 .6em; color: var(--w-ink); }
+.w-card h1 { font-size: clamp(34px, 6vw, 64px); letter-spacing: -.02em; }
+.w-card h2 { font-size: clamp(22px, 3vw, 32px); }
+.w-card p { margin: 0 0 1em; color: #cdd8e4; }
+.w-card p.gold { color: var(--w-gold); margin: 0; }
+.w-card p.hint { font-size: 12px; color: var(--w-muted); letter-spacing: .14em; margin: 14px 0 0; }
+.w-card p.foot { font-size: 11.5px; color: var(--w-muted); margin: 14px 0 0; line-height: 1.6; }
+.w-card .eyebrow { font-size: 12px; letter-spacing: .18em; color: var(--w-accent); text-transform: uppercase; margin-bottom: 14px; display: block; }
+.w-card .step { display: inline-block; font-size: 12px; color: var(--w-gold); letter-spacing: .14em; margin-bottom: 8px; }
+
+/* 슬라이더 */
+.w-ctrl label { display: flex; justify-content: space-between; font-size: 13px; color: var(--w-muted); margin-top: 14px; }
+.w-ctrl label b { color: var(--w-ink); font-weight: 500; }
+.w-ctrl input[type=range] { width: 100%; accent-color: var(--w-accent); margin: 6px 0 0; }
+.w-presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+/* 영등굿 4단계 */
+.w-steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+.w-steps div { border: 1px solid var(--w-line); border-radius: 12px; padding: 14px 16px; background: rgba(255,255,255,.03); }
+.w-steps b { display: block; font-family: "Noto Serif KR", serif; color: var(--w-accent); margin-bottom: 4px; }
+.w-steps span { font-size: 13px; color: #b9c7d6; line-height: 1.6; display: block; }
+
+/* 추천 장소 */
+.w-plist { margin-top: 14px; display: grid; gap: 8px; }
+.w-plist div { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--w-line); border-radius: 12px; padding: 10px 14px; background: rgba(255,255,255,.03); font-size: 14px; }
+.w-plist em { font-style: normal; font-size: 11px; color: var(--w-muted); }
+.w-plist .w b { color: var(--w-gold); }
+.w-plist .l b { color: var(--w-accent); }
+.w-plist small { display: block; font-size: 11px; letter-spacing: .12em; color: var(--w-muted); margin: 6px 0 -2px; }
+
+/* 영등 여정 주변 명소·맛집 */
+.w-btn.sm { font-size: 12px; padding: 4px 11px; }
+.w-nearby { margin-top: 18px; border-top: 1px solid var(--w-line); padding-top: 14px; }
+.w-nearby-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; letter-spacing: .14em; color: var(--w-gold); }
+.w-tabs { display: flex; gap: 6px; }
+.w-card p.w-advice { font-size: 12.5px; color: var(--w-muted); margin: 10px 0 8px; line-height: 1.6; }
+.w-card p.w-muted { font-size: 13px; color: var(--w-muted); margin: 8px 0; }
+.w-card p.w-sample { font-size: 11px; color: var(--w-muted); margin: 8px 0 0; opacity: .8; }
+.w-nearby-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.w-nearby-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--w-line); border-radius: 12px; padding: 8px 12px; background: rgba(255,255,255,.03); }
+.w-nearby-main { min-width: 0; }
+.w-nearby-main b { display: block; font-size: 14px; font-weight: 500; color: var(--w-ink); }
+.w-nearby-main small { display: block; font-size: 11px; color: var(--w-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-nearby-side { display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 11px; color: var(--w-muted); }
+.w-nearby-side em { font-style: normal; font-size: 10.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--w-line); }
+.w-nearby-side em.win { color: var(--w-gold); border-color: rgba(242,200,121,.4); }
+.w-nearby-side em.lee { color: var(--w-accent); border-color: rgba(127,227,214,.4); }
+.w-star { background: none; border: 0; color: var(--w-muted); cursor: pointer; padding: 2px 4px; }
+.w-star:hover:not(:disabled) { color: var(--w-gold); }
+.w-star:disabled { opacity: .35; cursor: not-allowed; }
+
+.w-dday { font-family: "Noto Serif KR", serif; font-size: clamp(54px, 10vw, 96px); line-height: 1; color: var(--w-gold); margin: 6px 0 10px; }
+
+@media (max-width: 720px) {
+  .w-sec, .w-sec.r { align-items: flex-end; justify-content: center; padding: 70px 14px 28px; }
+  .w-card { max-width: none; width: 100%; padding: 20px; }
+  .w-steps { grid-template-columns: 1fr; }
+  .w-meter { bottom: auto; top: 112px; }
+  .w-sound { top: 64px; }
+}
