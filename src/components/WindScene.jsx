@@ -10,13 +10,17 @@ import { STOPS } from '../data/story'
 // wind({speed, dir})와 stations(관측 지점 배열)가 바뀌면 바람장을 다시 계산한다.
 // markers: [{ x, z, kind: 'tour' | 'food', selected }] — 주변 명소·맛집을 작은 빛점으로 표시(선택된 것은 크게)
 // focus: {x, z} 이면 스크롤 카메라 대신 그 지점을 가까이서 비춘다 (장소 상세를 열었을 때)
-export default function WindScene({ wind, stations = null, markers = [], focus = null }) {
+// onPickMarker(id): 지도의 명소·맛집 빛을 눌렀을 때, onPickStop(id): 영등 여정 장소(금빛 기둥)를 눌렀을 때
+// 마우스 왼쪽 버튼으로 드래그하면 시점을 돌려 볼 수 있다 (더블클릭하면 원래 시점, 스크롤하면 자동 복귀)
+export default function WindScene({ wind, stations = null, markers = [], focus = null, onPickMarker, onPickStop }) {
   const canvasRef = useRef(null)
   const barRef = useRef(null)
   const pinEls = useRef([])
   const windRef = useRef(wind)
   const markersRef = useRef(markers)
   const focusRef = useRef(focus)
+  const hoverRef = useRef(null)
+  const cbRef = useRef({})
   const sceneApi = useRef(null)
   const field = useRef(null)
   if (!field.current) field.current = createWindField()
@@ -32,6 +36,7 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
   }, [markers])
 
   useEffect(() => { focusRef.current = focus }, [focus])
+  useEffect(() => { cbRef.current = { onPickMarker, onPickStop } }) // 항상 최신 콜백을 쓰도록 (장면은 한 번만 만들어지므로)
 
   useEffect(() => {
     // three r128 시절 색감을 유지하기 위해 색 관리를 끄고 선형 출력을 쓴다 (밝기는 π 보정)
@@ -140,10 +145,13 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
     scene.add(lines)
 
     const mouse = { active: false, x: 0, z: 0, nx: 0, ny: 0 }
+    const orbit = { yaw: 0, pitch: 0, tYaw: 0, tPitch: 0 } // 드래그로 돌린 시점 (t = 목표값, 실제 값은 부드럽게 따라감)
+    const drag = { id: null, x: 0, y: 0, sx: 0, sy: 0, moved: false }
     const ray = new THREE.Raycaster()
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
     const hit = new THREE.Vector3()
     const onMove = (e) => {
+      if (drag.moved) { mouse.active = false; return } // 시점을 돌리는 중에는 바람 밀기·시차 효과를 멈춘다
       mouse.nx = (e.clientX / innerWidth) * 2 - 1
       mouse.ny = (e.clientY / innerHeight) * 2 - 1
       ray.setFromCamera(new THREE.Vector2(mouse.nx, -mouse.ny), camera)
@@ -304,6 +312,77 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
     resize()
     if (secs.length) { camera.position.copy(secs[0].pos); curTgt.copy(secs[0].tgt) }
 
+    // ── 마우스 조작: 드래그로 시점 돌리기 / 빛(명소·맛집 마커, 여정 기둥) 호버·클릭 ──
+    const _pp = new THREE.Vector3()
+    const _off = new THREE.Vector3()
+    // 화면 좌표 (cx, cy) 근처에 있는 가장 가까운 빛을 찾는다. (화면에 투영한 거리로 판단 — 작은 점도 누르기 쉽게)
+    function pickAt(cx, cy) {
+      let best = null, bestD = Infinity
+      const consider = (kind, id, title, x, y, z, radius) => {
+        _pp.set(x, y, z).project(camera)
+        if (_pp.z >= 1) return // 카메라 뒤쪽
+        const sx = (_pp.x * 0.5 + 0.5) * innerWidth, sy = (-_pp.y * 0.5 + 0.5) * innerHeight
+        const d = Math.hypot(sx - cx, sy - cy)
+        if (d < radius && d < bestD) { bestD = d; best = { kind, id, title, sx, sy } }
+      }
+      for (const m of markersRef.current) consider('marker', m.id, m.title, m.x, Math.max(heightAt(m.x, m.z), 0) + 0.7, m.z, 26)
+      for (const s of pins) consider('stop', s.id, `${s.name} · ${s.sub}`, s.top.x, s.top.y, s.top.z, 34)
+      return best
+    }
+    const showHover = (h) => {
+      const el = hoverRef.current
+      if (el) {
+        if (h) { el.textContent = h.title; el.style.transform = `translate(${h.sx + 14}px, ${h.sy - 36}px)`; el.style.opacity = 1 }
+        else el.style.opacity = 0
+      }
+      canvas.style.cursor = h ? 'pointer' : drag.moved ? 'grabbing' : ''
+    }
+    const onDown = (e) => {
+      if (e.button !== 0) return
+      drag.id = e.pointerId; drag.x = drag.sx = e.clientX; drag.y = drag.sy = e.clientY; drag.moved = false
+      canvas.setPointerCapture?.(e.pointerId)
+    }
+    const onMoveCanvas = (e) => {
+      if (drag.id === e.pointerId) {
+        if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 5) { drag.moved = true; showHover(null) }
+        if (drag.moved && e.pointerType !== 'touch') { // 터치는 페이지 스크롤과 겹치므로 시점 회전은 마우스·펜만
+          orbit.tYaw -= (e.clientX - drag.x) * 0.006
+          orbit.tPitch = clamp(orbit.tPitch + (e.clientY - drag.y) * 0.004, -0.9, 0.9)
+          canvas.style.cursor = 'grabbing'
+        }
+        drag.x = e.clientX; drag.y = e.clientY
+      } else if (e.pointerType === 'mouse') {
+        showHover(pickAt(e.clientX, e.clientY))
+      }
+    }
+    const onUp = (e) => {
+      if (drag.id !== e.pointerId) return
+      canvas.releasePointerCapture?.(e.pointerId)
+      const wasDrag = drag.moved
+      drag.id = null; drag.moved = false
+      canvas.style.cursor = ''
+      if (wasDrag) return
+      const h = pickAt(e.clientX, e.clientY) // 드래그가 아니라 클릭
+      if (!h) return
+      if (h.kind === 'marker') cbRef.current.onPickMarker?.(h.id)
+      else cbRef.current.onPickStop?.(h.id)
+    }
+    const onCancel = () => { drag.id = null; drag.moved = false; canvas.style.cursor = '' }
+    const onLeaveCanvas = () => showHover(null)
+    const onDbl = () => { orbit.tYaw = 0; orbit.tPitch = 0 } // 더블클릭: 원래 시점
+    let lastScrollY = scrollY
+    const onScrollReset = () => { // 스크롤하면 돌려 둔 시점을 놓아 주고 장면의 카메라로 돌아간다
+      if (Math.abs(scrollY - lastScrollY) > 2) { orbit.tYaw = 0; orbit.tPitch = 0 }
+      lastScrollY = scrollY
+    }
+    canvas.addEventListener('pointerdown', onDown)
+    canvas.addEventListener('pointermove', onMoveCanvas)
+    canvas.addEventListener('pointerup', onUp)
+    canvas.addEventListener('pointercancel', onCancel)
+    canvas.addEventListener('pointerleave', onLeaveCanvas)
+    canvas.addEventListener('dblclick', onDbl)
+    addEventListener('scroll', onScrollReset, { passive: true })
+
     let raf = 0
     let last = performance.now()
     function frame(now) {
@@ -319,6 +398,19 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
         wantPos.set(f.x + (dx / d) * 6.5, gy + 3.4, f.z + (dz / d) * 6.5)
         wantTgt.set(f.x - (dx / d) * 2, gy + 1.0, f.z - (dz / d) * 2) // 장소보다 살짝 안쪽(육지 쪽)을 보게 해서 육지가 화면을 채우도록
         wantSide = 0
+      }
+      // 드래그로 돌린 시점: 카메라를 목표점 둘레로 돌린다 (수평 회전 yaw, 높낮이 pitch)
+      const ko = 1 - Math.exp(-dt * 8)
+      orbit.yaw += (orbit.tYaw - orbit.yaw) * ko
+      orbit.pitch += (orbit.tPitch - orbit.pitch) * ko
+      if (Math.abs(orbit.yaw) > 1e-4 || Math.abs(orbit.pitch) > 1e-4) {
+        _off.copy(wantPos).sub(wantTgt)
+        const cy = Math.cos(orbit.yaw), sy = Math.sin(orbit.yaw)
+        const ox = _off.x * cy + _off.z * sy, oz = -_off.x * sy + _off.z * cy
+        const hl = Math.hypot(ox, oz) || 1e-4, r = Math.hypot(hl, _off.y)
+        const ang = clamp(Math.atan2(_off.y, hl) + orbit.pitch, 0.15, 1.45) // 땅 밑으로 내려가거나 뒤집히지 않게
+        const h2 = Math.cos(ang) * r
+        wantPos.set(wantTgt.x + (ox / hl) * h2, wantTgt.y + Math.sin(ang) * r, wantTgt.z + (oz / hl) * h2)
       }
       wantPos.x += mouse.nx * 1.6
       wantPos.y += -mouse.ny * 0.9
@@ -343,6 +435,13 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
       removeEventListener('pointermove', onMove)
       removeEventListener('pointerleave', onLeave)
       removeEventListener('resize', resize)
+      removeEventListener('scroll', onScrollReset)
+      canvas.removeEventListener('pointerdown', onDown)
+      canvas.removeEventListener('pointermove', onMoveCanvas)
+      canvas.removeEventListener('pointerup', onUp)
+      canvas.removeEventListener('pointercancel', onCancel)
+      canvas.removeEventListener('pointerleave', onLeaveCanvas)
+      canvas.removeEventListener('dblclick', onDbl)
       ro.disconnect()
       scene.traverse((o) => {
         o.geometry?.dispose()
@@ -363,6 +462,8 @@ export default function WindScene({ wind, stations = null, markers = [], focus =
     <>
       <canvas ref={canvasRef} className="w-gl" />
       <div ref={barRef} className="w-bar" />
+      <div ref={hoverRef} className="w-hover" />
+      <div className="w-help">드래그해서 시점 돌리기 · 더블클릭하면 원래대로<br />지도의 빛을 누르면 안내가 열려요</div>
       {STOPS.map((s, i) => (
         <div key={s.id} className="w-pin" ref={(el) => { pinEls.current[i] = el }}>
           <b>{s.name}</b>

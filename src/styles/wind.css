@@ -5,7 +5,10 @@
   font-weight: 300;
   line-height: 1.7;
 }
-.w-gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.w-gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; cursor: grab; }
+/* 지도의 빛에 마우스를 올렸을 때 이름표 / 조작 안내 */
+.w-hover { position: fixed; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; transition: opacity .12s; padding: 4px 11px; border-radius: 999px; background: rgba(5,11,20,.88); border: 1px solid rgba(242,200,121,.5); font-size: 12px; white-space: nowrap; color: #fff; }
+.w-help { position: fixed; right: clamp(16px, 3vw, 32px); bottom: 20px; z-index: 5; pointer-events: none; font-size: 11px; line-height: 1.6; letter-spacing: .03em; text-align: right; color: var(--w-muted); text-shadow: 0 1px 8px #000; }
 .w-bar { position: fixed; right: 0; top: 0; width: 3px; height: 0; background: linear-gradient(var(--w-accent), var(--w-gold)); z-index: 1040; }
 
 /* 버튼 */
@@ -111,6 +114,7 @@
 @media (max-width: 720px) {
   .w-sec, .w-sec.r { align-items: flex-end; justify-content: center; padding: 70px 14px 28px; }
   .w-card { max-width: none; width: 100%; padding: 20px; }
+  .w-help { display: none; } /* 터치 화면에서는 드래그가 페이지 스크롤과 겹쳐 시점 회전을 끈다 */
   .w-photo { margin: -20px -20px 14px; }
   .w-photo img { height: 130px; }
   .w-steps { grid-template-columns: 1fr; }

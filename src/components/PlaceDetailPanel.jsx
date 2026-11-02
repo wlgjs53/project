@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Offcanvas } from 'react-bootstrap'
 import { fetchPlaceDetail } from '../api/client'
-import { exposureLabel, whyText } from '../lib/advice'
+import { exposure, exposureLabel, whyText } from '../lib/advice'
 import { useAppStore } from '../store/useAppStore'
 import { ErrorAlert, Loading } from './Status'
 
@@ -36,7 +36,8 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
   // 사진: 상세의 갤러리 → 없으면 목록의 대표 사진 한 장
   const photos = detail?.images?.length ? detail.images : place?.image ? [{ url: place.image, thumb: place.thumb || place.image, desc: place.title }] : []
   const shown = photos[active]
-  const label = sel?.kind === 'tour' ? exposureLabel(place?.e ?? 0) : ''
+  const e = place ? exposure(place, wind.dir) : 0 // 지도에서 직접 골라도 되도록 현재 바람으로 계산
+  const label = sel?.kind === 'tour' ? exposureLabel(e) : ''
   const dist = place?.dist === undefined ? '' : place.dist >= 1000 ? `${(place.dist / 1000).toFixed(1)}km` : `${Math.round(place.dist)}m`
   const route = place ? `https://map.kakao.com/link/to/${encodeURIComponent(place.title)},${place.lat},${place.lng}` : '#'
 
@@ -51,7 +52,7 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
             <div className="mb-2 d-flex flex-wrap gap-1">
               <Badge bg="secondary">{KIND[sel.kind]}</Badge>
               {dist && <Badge bg="dark" className="border">여정 장소에서 {dist}</Badge>}
-              {label && <Badge bg={place.e > 0 ? 'warning' : 'info'} text="dark">{label}</Badge>}
+              {label && <Badge bg={e > 0 ? 'warning' : 'info'} text="dark">{label}</Badge>}
             </div>
 
             {shown ? (
@@ -75,7 +76,7 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
 
             <div className="w-why mb-3">
               <b><i className="bi bi-wind me-1" />왜 이곳을 추천했나요?</b>
-              <p className="mb-0">{whyText(place, wind, sel.kind)}</p>
+              <p className="mb-0">{whyText({ ...place, e }, wind, sel.kind)}</p>
             </div>
 
             {place.sample && <p className="small text-muted">샘플 데이터라 자세한 정보가 없어요. TourAPI가 연결되면 실제 정보가 나옵니다.</p>}

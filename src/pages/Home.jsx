@@ -26,6 +26,18 @@ function useNarrow() {
   return narrow
 }
 
+// 지금 화면 가운데에 가장 가까운 스토리 카드가 오른쪽에 있는지 (패널을 반대편에 열기 위해)
+function visibleCardOnRight() {
+  const mid = innerHeight / 2
+  let best = null, bestD = Infinity
+  document.querySelectorAll('.w-sec').forEach((el) => {
+    const r = el.getBoundingClientRect()
+    const d = Math.abs((r.top + r.bottom) / 2 - mid)
+    if (d < bestD) { bestD = d; best = el }
+  })
+  return !!best?.classList.contains('r')
+}
+
 // 홈 = 영등할망의 바람길 (스크롤하면 3D 제주 위를 날아가는 스토리)
 export default function Home() {
   const [wind, setWind] = useState({ speed: 11, dir: 315 })
@@ -48,9 +60,24 @@ export default function Home() {
   const nearby = useNearby(STOPS)
 
   // 카드를 누르면: 상세 패널이 열리고, 3D 지도가 그 장소를 비춘다
-  const [sel, setSel] = useState(null) // { place, kind, stopId }
+  const [sel, setSel] = useState(null) // { place, kind }
   const [panelOpen, setPanelOpen] = useState(false)
-  const select = (stopId) => (place, kind) => { setSel({ place, kind, stopId }); setPanelOpen(true) }
+  const [side, setSide] = useState('end') // 패널이 열릴 쪽 (지금 보이는 스토리 카드의 반대편)
+  const openPlace = (place, kind) => {
+    setSel({ place, kind })
+    setSide(visibleCardOnRight() ? 'start' : 'end')
+    setPanelOpen(true)
+  }
+  // 지도(3D)에서 빛을 눌렀을 때: 그 장소를 찾아 상세 패널로 연다 / 여정 기둥이면 그 장면으로 스크롤한다
+  const pickMarker = (id) => {
+    for (const s of STOPS) {
+      for (const kind of ['tour', 'food']) {
+        const place = nearby[s.id][kind].find((p) => p.id === id)
+        if (place) return openPlace(place, kind)
+      }
+    }
+  }
+  const pickStop = (id) => document.querySelector(`[data-focus="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   // 패널이 열린 채로 페이지를 스크롤하면 다음 내용이 보이도록 패널을 닫는다 (카메라도 스크롤 장면으로 돌아감)
   useEffect(() => {
     if (!panelOpen) return
@@ -60,13 +87,13 @@ export default function Home() {
     return () => removeEventListener('scroll', onScroll)
   }, [panelOpen])
   const narrow = useNarrow()
-  const placement = narrow ? 'bottom' : sel?.stopId === 'chil' ? 'start' : 'end' // 스토리 카드의 반대편
+  const placement = narrow ? 'bottom' : side
   const selectedId = panelOpen ? sel?.place.id : null
   const focus = panelOpen && sel ? { x: sel.place.x, z: sel.place.z } : null
 
   const markers = useMemo(() => STOPS.flatMap((s) => [
-    ...nearby[s.id].tour.map((p) => ({ x: p.x, z: p.z, kind: 'tour', selected: p.id === selectedId })),
-    ...nearby[s.id].food.map((p) => ({ x: p.x, z: p.z, kind: 'food', selected: p.id === selectedId })),
+    ...nearby[s.id].tour.map((p) => ({ id: p.id, title: p.title, x: p.x, z: p.z, kind: 'tour', selected: p.id === selectedId })),
+    ...nearby[s.id].food.map((p) => ({ id: p.id, title: p.title, x: p.x, z: p.z, kind: 'food', selected: p.id === selectedId })),
   ]), [nearby, selectedId])
   const realPlaces = useMemo(() => {
     const seen = new Set()
@@ -87,7 +114,7 @@ export default function Home() {
 
   return (
     <div className="w-home">
-      <WindScene wind={wind} markers={markers} focus={focus} />
+      <WindScene wind={wind} markers={markers} focus={focus} onPickMarker={pickMarker} onPickStop={pickStop} />
       <WindMeter wind={wind} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
       <button type="button" className={`w-btn w-sound${sound.on ? ' on' : ''}`} onClick={sound.toggle}>
         <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}
@@ -116,7 +143,7 @@ export default function Home() {
           <h2>한림 한수리</h2>
           <p>전승에 따르면 영등할망은 바다 건너에서 제주 서쪽 해안, 한림읍 한수리 일대로 들어옵니다. 할망이 닿는 순간부터 제주 바다에 거센 바람이 불기 시작합니다.</p>
           <p className="hint">{ORIGIN_NOTE}</p>
-          <NearbyPanel data={nearby.han} wind={wind} selectedId={selectedId} onSelect={select('han')} />
+          <NearbyPanel data={nearby.han} wind={wind} selectedId={selectedId} onSelect={openPlace} />
         </StorySection>
 
         <StorySection cam="-8,7,-31, -1,0.5,-15.5" focus="chil" right
@@ -124,14 +151,14 @@ export default function Home() {
           <span className="step">2 · 맞이</span>
           <h2>건입동 칠머리당</h2>
           <p>제주시 건입동 칠머리당에서는 해녀와 어부들이 영등할망을 맞이하고 한 해의 안전과 풍요를 빕니다. 칠머리당영등굿은 2009년 유네스코 인류무형문화유산으로 등재되었습니다.</p>
-          <NearbyPanel data={nearby.chil} wind={wind} selectedId={selectedId} onSelect={select('chil')} />
+          <NearbyPanel data={nearby.chil} wind={wind} selectedId={selectedId} onSelect={openPlace} />
         </StorySection>
 
         <StorySection cam="48,7,-1, 37,0,-14" focus="udo" photo={heroOf('udo')}>
           <span className="step">3 · 퇴도</span>
           <h2>우도</h2>
           <p>보름 무렵, 할망은 우도 쪽 바다로 제주를 떠난다고 알려져 있습니다. 떠나는 길에 뿌린 씨앗이 이듬해 바다의 풍요가 된다고 믿었습니다.</p>
-          <NearbyPanel data={nearby.udo} wind={wind} selectedId={selectedId} onSelect={select('udo')} />
+          <NearbyPanel data={nearby.udo} wind={wind} selectedId={selectedId} onSelect={openPlace} />
         </StorySection>
 
         <StorySection cam="0,40,3, 0,0,0" right wide>
