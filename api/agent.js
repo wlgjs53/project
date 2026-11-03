@@ -96,7 +96,7 @@ function collectPlaces(tool, result, found) {
   if (!Array.isArray(result)) return;
   for (const r of result) {
     if (tool === 'search_oreum' && r.id && r.name) found.push({ kind: 'oreum', id: r.id, title: r.name, addr: r.addr, height: r.height_m, lat: r.lat, lng: r.lng });
-    else if ((tool === 'search_tour_places' || tool === 'search_nearby_places') && r.id && r.title && r.image) found.push({ kind: 'tour', id: r.id, title: r.title, addr: r.addr, image: r.image, lat: r.lat, lng: r.lng });
+    else if ((tool === 'search_tour_places' || tool === 'search_nearby_places') && r.id && r.title && r.image) found.push({ kind: 'tour', id: r.id, title: r.title, addr: r.addr, image: r.image, type: r.type, dist: r.dist, lat: r.lat, lng: r.lng });
   }
 }
 
