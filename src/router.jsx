@@ -5,6 +5,7 @@ import Check from './pages/Check'
 import Course from './pages/Course'
 import Places from './pages/Places'
 import Oreum from './pages/Oreum'
+import Shop from './pages/Shop'
 import Heritage from './pages/Heritage'
 import Agent from './pages/Agent'
 import My from './pages/My'
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'check', element: <Check /> },   // 개발용 동작 체크 (메뉴에는 없음)
       { path: 'places', element: <Places /> },
       { path: 'oreum', element: <Oreum /> },
+      { path: 'shop', element: <Shop /> },     // 굿즈샵(모의 결제) — 메뉴 대신 헤더의 장바구니 아이콘으로 들어간다
       { path: 'heritage', element: <Heritage /> },
       { path: 'agent', element: <Agent /> },
       { path: 'my', element: <My /> },

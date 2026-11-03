@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from '../lib/supabase'
 import { askAgent } from '../api/client'
+import { goodsById } from '../data/goods'
 
 // ── 앱 전체가 함께 쓰는 상태(store) ──────────────────────
 // 여러 페이지에서 같이 쓰는 데이터는 여기에 둡니다. (한 페이지에서만 쓰면 useState)
@@ -83,6 +84,42 @@ export const useAppStore = create(
         return found ? get().removeFavorite(found) : get().addFavorite({ source, id, title })
       },
 
+      // ⑤ 굿즈샵(모의 결제) — 장바구니는 브라우저에 저장하고, 주문은 Supabase orders 표에 저장한다. 실제 결제·배송은 없다.
+      cart: [],                       // [{ id, qty }]
+      lastOrder: null,                // 방금 완료한 주문 (주문 완료 화면용)
+      orders: [], ordersLoading: false,
+      addToCart: (id) => {
+        const cart = get().cart
+        const found = cart.find((c) => c.id === id)
+        set({ cart: found ? cart.map((c) => (c.id === id ? { ...c, qty: Math.min(9, c.qty + 1) } : c)) : [...cart, { id, qty: 1 }] })
+        get().toast('장바구니에 담았어요')
+      },
+      setQty: (id, qty) => set({ cart: get().cart.map((c) => (c.id === id ? { ...c, qty: Math.min(9, Math.max(1, qty)) } : c)) }),
+      removeFromCart: (id) => set({ cart: get().cart.filter((c) => c.id !== id) }),
+      clearCart: () => set({ cart: [] }),
+      loadOrders: async () => {
+        if (!supabase) return
+        set({ ordersLoading: true })
+        const { data, error } = await supabase.from('orders').select('*').eq('nickname', get().nickname || '익명').order('created_at', { ascending: false }).limit(10)
+        set({ ordersLoading: false })
+        if (error) return get().toast(error.code === '42P01' || /orders/.test(error.message) ? '주문 표(orders)가 아직 없어요 — Supabase 에서 SQL 을 실행해 주세요' : error.message, 'danger')
+        set({ orders: data })
+      },
+      // 모의 결제: 결제 수단 이름만 받아 주문을 저장한다 (카드번호·주소 같은 개인정보는 받지 않는다)
+      placeOrder: async (method) => {
+        if (!supabase) { get().toast('Supabase 설정(.env.local)이 필요해요', 'warning'); return null }
+        const items = get().cart.map((c) => ({ id: c.id, name: goodsById[c.id].name, price: goodsById[c.id].price, qty: c.qty }))
+        if (!items.length) return null
+        const total = items.reduce((a, i) => a + i.price * i.qty, 0)
+        const { data, error } = await supabase.from('orders').insert({ nickname: get().nickname || '익명', items, total, method }).select().single()
+        if (error) {
+          get().toast(error.code === '42P01' || /orders/.test(error.message) ? '주문 표(orders)가 아직 없어요 — Supabase 에서 SQL 을 실행해 주세요' : error.message, 'danger')
+          return null
+        }
+        set({ lastOrder: data, cart: [], orders: [data, ...get().orders] })
+        return data
+      },
+
       // ④ STEP 6: 에이전트 대화 — 페이지를 옮겨도 대화가 남도록 store 에 둡니다
       messages: [],          // { role: 'user' | 'assistant', text, steps }
       chatLoading: false,
@@ -108,7 +145,7 @@ export const useAppStore = create(
     }),
     {
       name: 'jeju-ip-store',                          // localStorage 키 이름
-      partialize: (s) => ({ nickname: s.nickname, courseStops: s.courseStops }),  // 저장할 항목만 고르기
+      partialize: (s) => ({ nickname: s.nickname, courseStops: s.courseStops, cart: s.cart }),  // 저장할 항목만 고르기
     },
   ),
 )

@@ -5,6 +5,7 @@ import { NAV_ITEMS } from '../router'
 import { isSupabaseReady } from '../lib/supabase'
 import { useAppStore } from '../store/useAppStore'
 import NicknameMenu from '../components/NicknameMenu'
+import CartLink from '../components/CartLink'
 
 export default function RootLayout() {
   const toasts = useAppStore((s) => s.toasts)
@@ -31,7 +32,7 @@ export default function RootLayout() {
                 </Nav.Link>
               ))}
             </Nav>
-            <NicknameMenu />
+            <div className="d-flex align-items-center gap-3"><CartLink /><NicknameMenu /></div>
           </Navbar.Collapse>
         </Container>
       </Navbar>
