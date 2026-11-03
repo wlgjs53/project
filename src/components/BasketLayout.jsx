@@ -25,7 +25,7 @@ export default function BasketLayout({ children }) {
         <aside className="basket">
           <div className="fw-bold mb-2"><i className="bi bi-star-fill text-warning me-1" />내 바구니 <small className="text-muted fw-normal">{favorites.length}곳</small></div>
           {favorites.length === 0 ? (
-            <p className="small text-muted mb-0">마음에 드는 곳의 ★를 눌러 담아 보세요. 담은 곳으로 오늘의 바람에 맞는 하루 코스를 짜 드려요.</p>
+            <p className="small text-muted mb-0">마음에 드는 곳의 ★를 눌러 담아 보세요. 담은 곳으로 내 즐겨찾기에서 오늘의 바람에 맞는 하루 코스를 만들 수 있어요.</p>
           ) : (
             <>
               <ul className="basket-list">
@@ -44,7 +44,7 @@ export default function BasketLayout({ children }) {
                 })}
               </ul>
               {usable > 0 ? (
-                <Link to="/course" className="btn btn-primary btn-sm w-100 mt-2"><i className="bi bi-signpost-split me-1" />이 {Math.min(usable, MAX_PLACES)}곳으로 코스 만들기</Link>
+                <Link to="/my" className="btn btn-primary btn-sm w-100 mt-2"><i className="bi bi-signpost-split me-1" />이 {Math.min(usable, MAX_PLACES)}곳으로 코스 만들기</Link>
               ) : (
                 <p className="small text-muted mt-2 mb-0">국가유산은 위치 정보가 없어 코스에는 들어가지 않아요.</p>
               )}
@@ -55,9 +55,9 @@ export default function BasketLayout({ children }) {
       </Col>
 
       {favorites.length > 0 && (
-        <Link to={usable > 0 ? '/course' : '/my'} className="basket-bar d-lg-none">
+        <Link to="/my" className="basket-bar d-lg-none">
           <span><i className="bi bi-star-fill text-warning me-1" />{favorites.length}곳 담았어요</span>
-          <b>{usable > 0 ? '할망따라 코스 만들기' : '내 즐겨찾기 보기'} <i className="bi bi-arrow-right" /></b>
+          <b>{usable > 0 ? '코스 만들기' : '내 즐겨찾기 보기'} <i className="bi bi-arrow-right" /></b>
         </Link>
       )}
     </Row>

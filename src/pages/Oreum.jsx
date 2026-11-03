@@ -90,7 +90,7 @@ export default function Oreum() {
             </div>
             <div className="d-flex flex-wrap gap-2 mt-2">
               <Link to="/?oreum=all" className="btn btn-outline-primary btn-sm"><i className="bi bi-wind me-1" />바람길 지도에서 오름 보기</Link>
-              <Link to="/course" className="btn btn-outline-secondary btn-sm"><i className="bi bi-signpost-split me-1" />오름 코스 만들기</Link>
+              <Link to="/course" className="btn btn-outline-secondary btn-sm"><i className="bi bi-signpost-split me-1" />오름 코스 추천 보기</Link>
             </div>
           </div>
 
