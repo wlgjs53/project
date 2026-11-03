@@ -23,6 +23,7 @@ export default function RootLayout() {
           <Navbar.Brand as={NavLink} to="/">
             <i className="bi bi-wind me-2" />영등할망의 바람길
           </Navbar.Brand>
+          <div className="d-md-none ms-auto me-2"><CartLink /></div>{/* 좁은 화면: 메뉴를 펼치지 않아도 굿즈 장바구니가 보이게 */}
           <Navbar.Toggle aria-controls="main-nav" />
           <Navbar.Collapse id="main-nav">
             <Nav className="me-auto">
@@ -32,7 +33,7 @@ export default function RootLayout() {
                 </Nav.Link>
               ))}
             </Nav>
-            <div className="d-flex align-items-center gap-3"><CartLink /><NicknameMenu /></div>
+            <div className="d-flex align-items-center gap-3"><span className="d-none d-md-inline-flex"><CartLink /></span><NicknameMenu /></div>
           </Navbar.Collapse>
         </Container>
       </Navbar>

@@ -50,6 +50,14 @@ function visibleCardOnRight() {
 export default function Home() {
   const [wind, setWind] = useState({ speed: 11, dir: 315 })
   const sound = useWindSound(wind)
+  // 좁은 화면: 스크롤을 내리면 위쪽의 버튼·풍속 표시를 감춰 카드 글자를 가리지 않게 한다 (맨 위로 올리면 다시 보임)
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const on = () => setScrolled(scrollY > 80)
+    on()
+    addEventListener('scroll', on, { passive: true })
+    return () => removeEventListener('scroll', on)
+  }, [])
   const [labelsOn, setLabelsOn] = useState(true) // 지도 지명 표시 (기본 켜짐, 옅게)
   const [oreumOn, setOreumOn] = useState(true)   // 오름 점 표시 (제주오름요약설명 90곳)
   const { items: oreums } = useOreums()
@@ -161,7 +169,7 @@ export default function Home() {
   }
 
   return (
-    <div className={`w-home${routeOpen ? ' route-on' : ''}`}>
+    <div className={`w-home${routeOpen ? ' route-on' : ''}${scrolled ? ' scrolled' : ''}`}>
       <WindScene wind={wind} stations={isLive ? live.stations : null} markers={markers} focus={focus} labels={labelsOn}
         route={sceneRoute} overview={!!sceneRoute} onPickMarker={pickMarker} onPickStop={pickStop} />
       {routeOpen && (

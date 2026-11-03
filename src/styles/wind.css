@@ -13,7 +13,7 @@
 
 /* 버튼 */
 .w-btn {
-  font: inherit; font-size: 13px; color: var(--w-ink); background: rgba(255,255,255,.07);
+  font: inherit; font-size: 13px; color: var(--w-ink); white-space: nowrap; background: rgba(255,255,255,.07);
   border: 1px solid var(--w-line); border-radius: 999px; padding: 8px 16px; cursor: pointer; pointer-events: auto; transition: .2s;
 }
 .w-btn:hover { background: rgba(127,227,214,.18); border-color: var(--w-accent); }
@@ -190,10 +190,14 @@ a.w-btn { display: inline-block; text-decoration: none; }
   .w-photo { margin: -20px -20px 14px; }
   .w-photo img { height: 130px; }
   .w-steps { grid-template-columns: 1fr; }
-  .w-meter { bottom: auto; top: 112px; }
-  .w-cue { top: 30%; left: 8px; gap: 6px; } /* 좁은 화면: 카드가 아래쪽이라 위로 올리고 조금 작게 */
+  .w-meter { bottom: auto; top: 124px; }
+  .w-cue { top: 42%; left: 8px; gap: 6px; } /* 좁은 화면: 카드가 아래쪽이라 위로 올리고 조금 작게 */
   .w-cue .label { font-size: 11px; } .w-cue .line { height: 44px; } .w-cue .ring { width: 38px; height: 38px; }
-  .w-tools { top: 64px; }
-  .w-compass { top: 106px; }
-  .w-where { top: 66px; font-size: 12px; }
+  .w-tools { top: 80px; left: 8px; right: 8px; gap: 6px; flex-wrap: wrap; } /* 버튼 4개가 한 줄에 들어가도록 작게, 글자 줄바꿈 없이 */
+  .w-btn { font-size: 12px; padding: 5px 10px; }
+  .w-compass { top: 122px; }
+  .w-where { top: 84px; font-size: 12px; }
+  .w-tools, .w-meter, .w-compass, .w-where { transition: opacity .25s; }
+  .w-home.scrolled .w-tools, .w-home.scrolled .w-meter, .w-home.scrolled .w-compass, .w-home.scrolled .w-where { opacity: 0; pointer-events: none; }
+  .w-home.route-on .w-tools, .w-home.route-on .w-meter { opacity: 1; pointer-events: auto; } /* 동선 안내를 열었을 때는 계속 보인다 */
 }

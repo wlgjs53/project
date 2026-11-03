@@ -38,7 +38,7 @@ export default function Shop() {
       <PageHeader icon="bag-heart" title="영등할망 굿즈샵" subtitle="바람의 신 영등할망 이야기를 담은 굿즈 — 마음에 드는 굿즈를 담아 주문해 보세요" />
       <Row className="g-4">
         <Col lg={8}>
-          <Row xs={1} sm={2} xl={3} className="g-3">
+          <Row xs={2} md={2} xl={3} className="g-3">
             {GOODS.map((g) => (
               <Col key={g.id}>
                 <div className="goods-card">
@@ -111,6 +111,14 @@ export default function Shop() {
           </aside>
         </Col>
       </Row>
+
+      {cart.length > 0 && <div className="d-lg-none" style={{ height: 64 }} />}
+      {cart.length > 0 && (
+        <button type="button" className="basket-bar d-lg-none" onClick={() => document.querySelector('.cart-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+          <span><i className="bi bi-bag-heart me-1" />{cart.reduce((a, c) => a + c.qty, 0)}개 · {won(total)}</span>
+          <b>장바구니 보기 <i className="bi bi-arrow-down" /></b>
+        </button>
+      )}
 
       <p className="small text-muted text-center mt-5 mb-0">※ 제주 문화 IP 과제 프로젝트의 가상 상점이에요. 상품은 시안이며 실제 결제·배송은 이루어지지 않아요.</p>
 
