@@ -78,7 +78,7 @@ export default function Oreum() {
   )
 
   return (
-    <BasketLayout>
+    <BasketLayout mobileWeather={false}>
       <PageHeader icon="triangle" title="바람따라 오름" subtitle="오늘의 바람으로 고른, 오르기 좋은 제주 오름 — 제주특별자치도 제주오름요약설명(공공데이터포털)" />
       <ErrorAlert error={error?.message ?? (forecast.error || '')} />
       {(forecast.loading || (!items.length && !error)) ? <Loading /> : wind && (

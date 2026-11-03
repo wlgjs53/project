@@ -3,25 +3,30 @@ import { Badge, Col, Row } from 'react-bootstrap'
 import { useAppStore } from '../store/useAppStore'
 import { useFavoriteMeta } from '../hooks/useFavoriteMeta'
 import { MAX_PLACES } from '../lib/course'
+import ConfirmButton from './ConfirmButton'
+import WeatherCard from './WeatherCard'
 
 const KIND = { oreum: '오름', heritage: '유산', tour: '명소' }
 
 // 명소·맛집 / 영등굿·유산 / 바람따라 오름 화면 오른쪽에 붙는 "장바구니":
 // ★로 담은 곳이 바로 보이고, 거기서 곧장 할망따라 코스를 만들 수 있다. 좁은 화면에서는 아래에 떠 있는 바로 바뀐다.
-export default function BasketLayout({ children }) {
+export default function BasketLayout({ children, mobileWeather = true }) {
   const favorites = useAppStore((s) => s.favorites)
   const removeFavorite = useAppStore((s) => s.removeFavorite)
+  const removeFavorites = useAppStore((s) => s.removeFavorites)
   const { meta } = useFavoriteMeta(favorites)
   const usable = favorites.filter((f) => f.source !== 'heritage').length // 위치 정보가 있어 코스에 쓸 수 있는 곳
 
   return (
     <Row className="g-4">
       <Col lg={9}>
+        {mobileWeather && <div className="d-lg-none mb-3"><WeatherCard compact /></div>}
         {children}
         {favorites.length > 0 && <div className="d-lg-none" style={{ height: 64 }} />}
       </Col>
 
       <Col lg={3} className="d-none d-lg-block">
+        <div className="basket-col">
         <aside className="basket">
           <div className="fw-bold mb-2"><i className="bi bi-star-fill text-warning me-1" />내 바구니 <small className="text-muted fw-normal">{favorites.length}곳</small></div>
           {favorites.length === 0 ? (
@@ -48,10 +53,15 @@ export default function BasketLayout({ children }) {
               ) : (
                 <p className="small text-muted mt-2 mb-0">국가유산은 위치 정보가 없어 코스에는 들어가지 않아요.</p>
               )}
-              <Link to="/my" className="d-block text-center small mt-2">내 즐겨찾기 전체 보기</Link>
+              <div className="d-flex justify-content-between align-items-center mt-2">
+                <Link to="/my" className="small">전체 보기</Link>
+                <ConfirmButton size="sm" label="전체 삭제" question={`${favorites.length}곳을 모두 삭제할까요?`} onConfirm={() => removeFavorites(favorites)} />
+              </div>
             </>
           )}
         </aside>
+        <WeatherCard />
+        </div>
       </Col>
 
       {favorites.length > 0 && (
