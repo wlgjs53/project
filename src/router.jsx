@@ -23,6 +23,7 @@ export const NAV_ITEMS = [
   { to: '/course', label: '할망따라', icon: 'signpost-split' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
   { to: '/agent', label: '영등할망 가이드', icon: 'robot' },
+  { to: '/shop', label: '굿즈샵', icon: 'bag-heart' },
 ]
 
 export const router = createBrowserRouter([
@@ -35,7 +36,7 @@ export const router = createBrowserRouter([
       { path: 'check', element: <Check /> },   // 개발용 동작 체크 (메뉴에는 없음)
       { path: 'places', element: <Places /> },
       { path: 'oreum', element: <Oreum /> },
-      { path: 'shop', element: <Shop /> },     // 굿즈샵(모의 결제) — 메뉴 대신 헤더의 장바구니 아이콘으로 들어간다
+      { path: 'shop', element: <Shop /> },     // 굿즈샵 — 메뉴·헤더 장바구니 아이콘·홈 스토리 끝 카드로 들어간다
       { path: 'heritage', element: <Heritage /> },
       { path: 'agent', element: <Agent /> },
       { path: 'my', element: <My /> },

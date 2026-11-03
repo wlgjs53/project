@@ -211,3 +211,11 @@ body { font-family: 'Pretendard', system-ui, sans-serif; background: #050b14; }
 
 @media (max-width: 575px) { .goods-card .p-3 { padding: .6rem !important; } .goods-card .small { font-size: 11.5px; } }
 button.basket-bar { font: inherit; text-align: left; }
+
+/* 메뉴가 8개라 데스크톱에서 줄바꿈되지 않게 간격을 좁힌다 */
+.app-nav .nav-link { white-space: nowrap; }
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .app-nav .navbar-nav { --bs-nav-link-padding-x: 0.45rem; }
+  .app-nav .nav-link { font-size: 0.9rem; }
+  .app-nav .navbar-brand { font-size: 1.05rem; margin-right: 0.5rem; }
+}

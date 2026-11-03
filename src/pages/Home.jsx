@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import WindScene from '../components/WindScene'
 import RoutePanel from '../components/RoutePanel'
 import { useAppStore } from '../store/useAppStore'
@@ -7,6 +7,7 @@ import { useRouteLine } from '../hooks/useCourseRoute'
 import { useOreums } from '../hooks/useOreums'
 import { llToXZ } from '../lib/geo'
 import StorySection from '../components/StorySection'
+import GoodsArt from '../components/GoodsArt'
 import StoryPhoto from '../components/StoryPhoto'
 import WindMeter from '../components/WindMeter'
 import WindControls from '../components/WindControls'
@@ -261,6 +262,18 @@ export default function Home() {
           <div className="w-dday">{yd.big}</div>
           <p>{yd.sub}</p>
           <p className="foot">지형: AWS Terrain Tiles(SRTM·GEBCO 등) 고도 데이터를 바탕으로 높이를 과장해 표현했습니다. 영등굿 설명은 국가유산청 자료를 참고했으며, 전승은 지역과 문헌에 따라 다를 수 있습니다.</p>
+        </StorySection>
+
+        <StorySection cam="0,30,52, 0,0,0">
+          <span className="step">영등할망 굿즈샵</span>
+          <h2>바람의 신을 곁에 두는 법</h2>
+          <p>영등할망 인형, 해녀 테왁 키링, 바람개비 마그넷… 이야기를 담은 굿즈를 담아 주문해 보세요.</p>
+          <div className="w-goods">
+            <GoodsArt art="doll-halmang" />
+            <GoodsArt art="keyring-wind" />
+            <GoodsArt art="magnet-pinwheel" />
+          </div>
+          <Link to="/shop" className="w-btn"><i className="bi bi-bag-heart me-1" />굿즈샵 구경하기</Link>
         </StorySection>
       </div>
     </div>

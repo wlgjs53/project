@@ -201,3 +201,6 @@ a.w-btn { display: inline-block; text-decoration: none; }
   .w-home.scrolled .w-tools, .w-home.scrolled .w-meter, .w-home.scrolled .w-compass, .w-home.scrolled .w-where { opacity: 0; pointer-events: none; }
   .w-home.route-on .w-tools, .w-home.route-on .w-meter { opacity: 1; pointer-events: auto; } /* 동선 안내를 열었을 때는 계속 보인다 */
 }
+
+.w-goods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0 16px; }
+.w-goods .goods-art { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--w-line); }
