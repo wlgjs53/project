@@ -86,6 +86,7 @@ export const useAppStore = create(
       // ④ STEP 6: 에이전트 대화 — 페이지를 옮겨도 대화가 남도록 store 에 둡니다
       messages: [],          // { role: 'user' | 'assistant', text, steps }
       chatLoading: false,
+      clearMessages: () => set({ messages: [] }),   // 새 대화로 시작 (크레딧도 아낄 수 있다)
       sendMessage: async (text) => {
         const history = get().messages.filter((m) => !m.error).map((m) => ({ role: m.role, content: m.text }))  // Claude 형식 (오류 안내문은 보내지 않는다)
         set({ messages: [...get().messages, { role: 'user', text }], chatLoading: true })
