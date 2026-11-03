@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, Form, InputGroup, Spinner } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
 import { useAppStore } from '../store/useAppStore'
+import FavStar from '../components/FavStar'
+import OreumImg from '../components/OreumImg'
+import { useFavorites } from '../hooks/useFavorites'
+import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
+import { kakaoTo } from '../lib/nav'
 
 // 도구 이름 → 화면에 보일 한국어 이름 (에이전트가 무엇을 했는지 칩으로 보여 준다)
 const TOOL_LABEL = {
@@ -45,6 +51,37 @@ function ToolSteps({ steps }) {
   )
 }
 
+// 에이전트가 추천한 장소를 사진 카드로 — 오름은 우리가 모아 둔 오름 사진, 명소·맛집은 TourAPI 사진. ★로 바로 담고 지도·길찾기로 이어진다.
+function PlaceCards({ cards }) {
+  const { isFav, toggle } = useFavorites()
+  const [photos, setPhotos] = useState([])
+  useEffect(() => { loadOreumPhotos().then(setPhotos) }, [])
+  return (
+    <div className="agent-cards">
+      {cards.map((c) => {
+        const oreum = c.kind === 'oreum'
+        const photo = oreum ? findOreumPhoto(photos, c) : null
+        const src = oreum ? 'oreum' : 'tour'
+        return (
+          <div key={`${c.kind}:${c.id}`} className="agent-card">
+            <div className="agent-card-img">
+              {oreum ? (photo?.image ? <OreumImg photo={photo} alt={c.title} /> : <span className="agent-card-ph"><i className="bi bi-triangle" /></span>) : <img src={c.image} alt={c.title} loading="lazy" />}
+              <FavStar saved={isFav(src, c.id)} onToggle={() => toggle({ source: src, id: c.id, title: c.title })} />
+            </div>
+            <div className="p-2">
+              <div className="fw-bold text-truncate">{c.title}</div>
+              <div className="small text-muted text-truncate">{oreum && c.height ? `표고 ${c.height}m · ` : ''}{c.addr}</div>
+              {oreum
+                ? <Link to={`/?oreum=${encodeURIComponent(c.id)}`} className="small">바람길 지도에서 보기</Link>
+                : <a href={kakaoTo(c)} target="_blank" rel="noreferrer" className="small">길찾기</a>}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function Agent() {
   const messages = useAppStore((s) => s.messages)
   const loading = useAppStore((s) => s.chatLoading)
@@ -83,6 +120,7 @@ export default function Agent() {
             {m.steps?.length > 0 && <ToolSteps steps={m.steps} />}
             {m.error && <i className="bi bi-exclamation-triangle me-1" />}
             {m.role === 'assistant' ? <RichText text={m.text} /> : m.text}
+            {m.cards?.length > 0 && <PlaceCards cards={m.cards} />}
           </div>
         ))}
         {loading && <div className="msg assistant"><Spinner size="sm" className="me-2" />에이전트가 도구를 사용하는 중...</div>}

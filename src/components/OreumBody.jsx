@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge, Button } from 'react-bootstrap'
 import { fetchNearby } from '../api/client'
 import OreumImg from './OreumImg'
+import RainNote from './RainNote'
 import { useFavorites } from '../hooks/useFavorites'
 import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
@@ -11,7 +12,7 @@ import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
 const cache = new Map() // 오름 id → { photo, foods }
 
 // 오름 상세(바람길 지도의 오름 점을 눌렀을 때): 표고·설명(제주오름요약설명) + 같은 이름의 TourAPI 사진 + 오름 근처 맛집
-export default function OreumBody({ place, wind }) {
+export default function OreumBody({ place, wind, rain = wind }) {
   const { isFav, toggle } = useFavorites()
   const saved = isFav('oreum', place.id)
   const [extra, setExtra] = useState(() => cache.get(place.id) ?? null)
@@ -73,6 +74,8 @@ export default function OreumBody({ place, wind }) {
         <b><i className="bi bi-wind me-1" />바람 따라 걷기</b>
         <p className="mb-0">지금 {dirName(wind.dir)}풍 {wind.speed.toFixed(1)}m/s. 이 오름은 {side}이에요. {summit}</p>
       </div>
+
+      <RainNote rain={rain} className="mb-3" />
 
       {place.desc && <p>{place.desc}</p>}
 

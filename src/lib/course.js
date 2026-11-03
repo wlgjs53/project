@@ -71,9 +71,9 @@ export function buildCourse({ places, slots, matrix = null }) {
     ? { min: Math.max(1, Math.round(matrix.minutes[a.idx][b.idx])), km: matrix.km[a.idx][b.idx] }
     : { min: estimateMin(distKm(a, b)), km: distKm(a, b) })
 
-  const windAt = (min) => {
+  const slotAt = (min) => {
     const h = Math.floor(min / 60)
-    return (slots.find((s) => s.hour === h) ?? (min < startMin ? slots[0] : slots.at(-1))).speed
+    return slots.find((s) => s.hour === h) ?? (min < startMin ? slots[0] : slots.at(-1))
   }
 
   function evaluate(order) {
@@ -82,9 +82,11 @@ export function buildCourse({ places, slots, matrix = null }) {
     for (const it of order) {
       const leg = prev ? legOf(prev, it) : { min: 0, km: 0 }
       const arrive = t + leg.min
-      const w = windAt(arrive)
+      const slot = slotAt(arrive)
+      const w = slot.speed
       cost += leg.min * 0.03
       if (it.kind === 'sight') cost += it.windward ? w * 1.0 : it.leeward ? (maxW - w) * 0.25 : w * 0.3 // 바람 맞는 곳은 약한 시간에
+      if (it.kind === 'sight') cost += ((slot.pop ?? 0) / 100) * 4 + (slot.rainMm ?? 0) * 1.5 // 야외(오름·해안)는 비가 올 만한 시간을 피한다
       if (it.kind === 'indoor') cost += (maxW - w) * 0.5                                                  // 실내는 바람이 센 시간에
       if (it.kind === 'food') {
         // 첫 식당은 점심 시간대에, 두 번째부터는 오후(3시 이후)의 식사·카페로 — 식당 두 곳이 연달아 점심이 되지 않게
@@ -93,7 +95,7 @@ export function buildCourse({ places, slots, matrix = null }) {
       }
       steps.push({
         place: it, kind: it.kind, e: it.e, windward: it.windward, leeward: it.leeward, foodNo: it.kind === 'food' ? foodNo - 1 : -1,
-        arrive, depart: arrive + STAY_MIN, travel: leg.min, km: leg.km, wind: w, level: windLevel(w),
+        arrive, depart: arrive + STAY_MIN, travel: leg.min, km: leg.km, wind: w, level: windLevel(w), pop: slot.pop ?? 0, rainMm: slot.rainMm ?? 0,
       })
       t = arrive + STAY_MIN
       prev = it
@@ -108,7 +110,7 @@ export function buildCourse({ places, slots, matrix = null }) {
     if (!best || r.cost < best.cost) best = r
   }
 
-  const steps = best.steps.map((s, i) => ({ ...s, reason: reasonFor(s, i, { minW, maxW }) }))
+  const steps = best.steps.map((s, i) => ({ ...s, reason: withRain(reasonFor(s, i, { minW, maxW }), s) }))
   return {
     steps,
     estimated: !matrix,
@@ -116,6 +118,7 @@ export function buildCourse({ places, slots, matrix = null }) {
       from: startMin, to: steps.at(-1).depart,
       totalKm: steps.reduce((a, s) => a + s.km, 0), driveMin: steps.reduce((a, s) => a + s.travel, 0),
       minW, maxW, windDir,
+      maxPop: Math.max(...slots.map((s) => s.pop ?? 0)), rainTotal: Math.round(slots.reduce((a, s) => a + (s.rainMm ?? 0), 0) * 10) / 10,
       overtime: steps.at(-1).depart > endLimit, // 예보가 있는 시간(오후 7시경)을 넘기는 코스
     },
   }
@@ -148,6 +151,14 @@ export function autoPick({ sights = [], indoors = [], foods = [], slots, variant
   const food = (nearFoods.find((o) => /해녀/.test(o.f.title) && o.d <= 15) ?? nearFoods[0])?.f // 영등·해녀 문화와 이어지는 해녀의집 우선
   if (food) picked.push(food)
   return picked.slice(0, MAX_PLACES)
+}
+
+// 비 올 가능성이 높은 시간(강수확률 50% 이상)이면 설명 끝에 비 안내를 붙인다
+function withRain(reason, s) {
+  if (s.pop < 50 && s.rainMm < 1) return reason
+  return s.kind === 'indoor' || s.kind === 'food'
+    ? `${reason} 비가 와도 실내라 편해요. (강수확률 ${s.pop}%)`
+    : `${reason} 비 올 가능성이 높은 시간이에요(강수확률 ${s.pop}%). 우산을 챙기고 바닥이 미끄러울 수 있으니 조심하세요.`
 }
 
 // "왜 이 시간에 이곳인지" 한 줄 설명

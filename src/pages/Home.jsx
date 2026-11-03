@@ -169,7 +169,7 @@ export default function Home() {
           kinds={[{ key: 'yd', label: '영등 여정' }, { key: 'course', label: `내 코스${courseStops.length > 1 ? ` (${courseStops.length}곳)` : ''}` }]}
           stops={routeStops} legs={routeData.legs} loading={!routeData.ready} />
       )}
-      <WindMeter wind={wind} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
+      <WindMeter wind={wind} rain={isLive ? live.rain : null} tag={yd.season ? `영등 시즌 · ${windTag}` : windTag} />
       <div className="w-tools">
         <button type="button" className={`w-btn${routeOpen ? ' on' : ''}`} onClick={() => { setPanelOpen(false); setRouteOpen((v) => !v) }}>
           <i className="bi bi-signpost-split me-1" />동선 안내
@@ -187,7 +187,7 @@ export default function Home() {
 
       <ScrollCue />
 
-      <PlaceDetailPanel sel={sel} show={panelOpen} wind={wind} placement={placement} onHide={() => setPanelOpen(false)} />
+      <PlaceDetailPanel sel={sel} show={panelOpen} wind={wind} rain={live?.rain ?? null} placement={placement} onHide={() => setPanelOpen(false)} />
 
       <div className="w-story">
         <StorySection cam="0,26,50, 0,0,-2">

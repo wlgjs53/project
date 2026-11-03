@@ -29,6 +29,7 @@ function WindBars({ slots, steps }) {
           <div className="fill" style={{ height: `${Math.max(6, (s.speed / maxV) * 56)}px` }} />
           <small>{s.hour}시</small>
           <div className="visit">{(visits.get(s.hour) ?? []).map((n) => <span key={n} className="dot">{n}</span>)}</div>
+          <span className={`pop${(s.pop ?? 0) >= 60 ? ' high' : ''}`}>{(s.pop ?? 0) >= 30 ? `${s.pop}%` : ''}</span>
         </div>
       ))}
     </div>
@@ -108,6 +109,7 @@ export default function CourseResult({ places: base, slots }) {
         </div>
         <div className="small text-muted mt-1">
           바람 {course.summary.minW.toFixed(1)}~{course.summary.maxW.toFixed(1)}m/s · {dirName(course.summary.windDir)}풍
+          {' · '}<i className="bi bi-cloud-rain me-1" />강수확률 최대 {course.summary.maxPop}%{course.summary.rainTotal > 0 && ` · 예상 강수 약 ${course.summary.rainTotal}mm`}
         </div>
         <WindBars slots={day.slots} steps={course.steps} />
       </div>
@@ -143,6 +145,7 @@ export default function CourseResult({ places: base, slots }) {
                         <b>{hhmm(s.arrive)}</b><small className="text-muted me-1">~{hhmm(s.depart)}</small>
                         <Badge bg={isOreum(s.place) ? 'success' : 'secondary'}>{isOreum(s.place) ? '오름' : KIND_LABEL[s.kind]}</Badge>
                         {s.kind === 'sight' && exposureLabel(s.e) && <Badge bg={s.e > 0 ? 'warning' : 'info'} text="dark">{exposureLabel(s.e)}</Badge>}
+                        {s.pop >= 50 && <Badge bg="primary"><i className="bi bi-cloud-rain me-1" />강수 {s.pop}%</Badge>}
                       </div>
                       <div className="fw-bold">{s.place.title}</div>
                       {s.place.addr && <div className="small text-muted">{s.place.addr}</div>}

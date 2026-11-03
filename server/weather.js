@@ -4,6 +4,15 @@ const GRID = { '제주시': [53, 38], '서귀포시': [52, 33] }; // 기상청 �
 const SKY = { 1: '맑음', 3: '구름많음', 4: '흐림' };
 const PTY = { 0: '없음', 1: '비', 2: '비/눈', 3: '눈', 4: '소나기' };
 
+// 기상청 1시간 강수량(PCP) 글자 → 대략의 mm 숫자: '강수없음' 0, '1mm 미만' 0.5, '5.0mm' 5, '30.0~50.0mm' 40, '50.0mm 이상' 50
+function rainMm(pcp) {
+  const t = String(pcp ?? '');
+  if (!t || t.includes('없음')) return 0;
+  if (t.includes('미만')) return 0.5;
+  const nums = (t.match(/[d.]+/g) ?? []).map(Number).filter(Number.isFinite);
+  return nums.length ? Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10 : 0;
+}
+
 // 발표시각: 02·05·08·11·14·17·20·23시 (발표 후 약 10분 뒤부터 조회 가능)
 function baseDateTime() {
   const kst = new Date(Date.now() + 9 * 3600e3 - 15 * 60e3); // 한국시간, 15분 여유
@@ -39,6 +48,7 @@ export async function getWeather({ place = '제주시', hours = 6 } = {}) {
   return Object.entries(slots).slice(0, Math.min(48, Math.max(1, Number(hours) || 6))).map(([time, v]) => ({
     place, time, temp: Number(v.TMP), sky: SKY[v.SKY] ?? v.SKY,
     rain: PTY[v.PTY] ?? v.PTY, pop: Number(v.POP), // pop = 강수확률(%)
+    pcp: v.PCP ?? '강수없음', rainMm: rainMm(v.PCP),   // pcp = 1시간 강수량 원문(예: '1mm 미만', '5.0mm'), rainMm = 계산용 숫자(mm)
     wind: Number(v.WSD), windDir: Number(v.VEC),   // wind = 풍속(m/s), windDir = 바람이 불어오는 방위(°)
   }));
 }

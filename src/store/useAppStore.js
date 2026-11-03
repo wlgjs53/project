@@ -91,8 +91,8 @@ export const useAppStore = create(
         const history = get().messages.filter((m) => !m.error).map((m) => ({ role: m.role, content: m.text }))  // Claude 형식 (오류 안내문은 보내지 않는다)
         set({ messages: [...get().messages, { role: 'user', text }], chatLoading: true })
         try {
-          const { answer, steps } = await askAgent(text, history)
-          set({ messages: [...get().messages, { role: 'assistant', text: answer, steps }] })
+          const { answer, steps, cards } = await askAgent(text, history)
+          set({ messages: [...get().messages, { role: 'assistant', text: answer, steps, cards }] })
         } catch (e) {
           // 실패해도 대화창에 이유를 남긴다 (키 없음·크레딧 부족·한도 초과 등)
           set({ messages: [...get().messages, { role: 'assistant', text: e.message, error: true }] })

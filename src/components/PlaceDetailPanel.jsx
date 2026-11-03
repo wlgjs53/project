@@ -5,13 +5,14 @@ import { exposure, exposureLabel, whyText } from '../lib/advice'
 import { useFavorites } from '../hooks/useFavorites'
 import { ErrorAlert, Loading } from './Status'
 import OreumBody from './OreumBody'
+import RainNote from './RainNote'
 
 const cache = new Map() // 같은 장소를 다시 열 때 서버를 또 부르지 않도록
 const KIND = { tour: '명소', food: '맛집' }
 
 // 카드를 눌렀을 때 열리는 장소 상세: 사진 갤러리, 소개, 이용 정보, 그리고 "왜 추천했는지"
 // sel: { place, kind } — place 는 useNearby 의 항목(+ e: 바람 노출도)
-export default function PlaceDetailPanel({ sel, show, wind, placement, onHide }) {
+export default function PlaceDetailPanel({ sel, show, wind, rain = null, placement, onHide }) {
   const { isFav, toggle } = useFavorites()
   const place = sel?.place
   const [detail, setDetail] = useState(null)
@@ -48,7 +49,7 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
         <Offcanvas.Title className="fs-5 fw-bold">{place?.title}</Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body>
-        {place && sel.kind === 'oreum' && <OreumBody place={place} wind={wind} />}
+        {place && sel.kind === 'oreum' && <OreumBody place={place} wind={wind} rain={rain} />}
         {place && sel.kind !== 'oreum' && (
           <>
             <div className="mb-2 d-flex flex-wrap gap-1">
@@ -80,6 +81,8 @@ export default function PlaceDetailPanel({ sel, show, wind, placement, onHide })
               <b><i className="bi bi-wind me-1" />왜 이곳을 추천했나요?</b>
               <p className="mb-0">{whyText({ ...place, e }, wind, sel.kind)}</p>
             </div>
+
+            {sel.kind === 'tour' && <RainNote rain={rain} className="mb-3" />}
 
             {place.sample && <p className="small text-muted">샘플 데이터라 자세한 정보가 없어요. TourAPI가 연결되면 실제 정보가 나옵니다.</p>}
             {loading && <Loading />}

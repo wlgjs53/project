@@ -24,7 +24,7 @@ export function useLiveWind() {
     let alive = true
     Promise.allSettled(SITES.map((s) => fetchWeather(s.place).then(pick))).then((results) => {
       const pts = results
-        .map((r, i) => (r.status === 'fulfilled' && r.value ? { ...SITES[i], speed: r.value.wind, dir: r.value.windDir } : null))
+        .map((r, i) => (r.status === 'fulfilled' && r.value ? { ...SITES[i], speed: r.value.wind, dir: r.value.windDir, pop: r.value.pop, rainMm: r.value.rainMm, pcp: r.value.pcp, type: r.value.rain } : null))
         .filter(Boolean)
       if (!alive || !pts.length) return
       const speed = Math.round((pts.reduce((a, p) => a + p.speed, 0) / pts.length) * 10) / 10
@@ -33,6 +33,7 @@ export function useLiveWind() {
       const dir = Math.round(((Math.atan2(sx, sz) * 180) / Math.PI + 360) % 360)
       setLive({
         speed, dir,
+        rain: { pop: Math.max(...pts.map((p) => p.pop || 0)), rainMm: Math.max(...pts.map((p) => p.rainMm || 0)), pcp: pts.reduce((a, p) => ((p.rainMm || 0) > (a.rainMm || 0) ? p : a), pts[0]).pcp ?? '강수없음', type: pts.find((p) => p.type !== '없음')?.type ?? '없음' },
         label: pts.length === 2 ? '제주시·서귀포시 평균' : pts[0].place,
         stations: pts.length === 2 ? pts.map(({ x, z, speed: sp, dir: d }) => ({ x, z, speed: sp, dir: d })) : null,
       })

@@ -31,6 +31,7 @@ export function useWindForecast() {
           dir: Math.round(((Math.atan2(sx, sz) * 180) / Math.PI + 360) % 360),
           temp: Math.round(rs.reduce((a, r) => a + r.temp, 0) / rs.length),
           sky: rs[0].sky, rain: rs.find((r) => r.rain !== '없음')?.rain ?? '없음', pop: Math.max(...rs.map((r) => r.pop || 0)),
+          rainMm: Math.max(...rs.map((r) => r.rainMm || 0)), pcp: rs.reduce((a, r) => ((r.rainMm || 0) > (a.rainMm || 0) ? r : a), rs[0]).pcp ?? '강수없음',
         }
       })
       setState({ loading: false, error: '', slots })

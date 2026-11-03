@@ -14,6 +14,7 @@ import { exposure, exposureLabel, windLevel } from '../lib/advice'
 import { dirName } from '../lib/geo'
 import { findOreumPhoto, loadOreumPhotos } from '../lib/oreumPhoto'
 import { currentWind } from '../lib/wind'
+import RainNote from '../components/RainNote'
 
 const PAGE = 24
 const AREAS = [['', '전체'], ['제주시', '제주시'], ['서귀포시', '서귀포시']]
@@ -88,6 +89,7 @@ export default function Oreum() {
               {level === 'calm' ? '바람이 잔잔한 날이에요.' : level === 'normal' ? '바람이 적당한 날이에요.' : '바람이 강한 날이에요.'} 정상 바람이 약할 것 같은 오름부터 보여 드려요.
               {' '}정상 바람은 표고와 한라산 기준 방향으로 어림한 단순 계산이에요.
             </div>
+            <RainNote rain={wind} className="mt-2" />
             <div className="d-flex flex-wrap gap-2 mt-2">
               <Link to="/?oreum=all" className="btn btn-outline-primary btn-sm"><i className="bi bi-wind me-1" />바람길 지도에서 오름 보기</Link>
               <Link to="/course" className="btn btn-outline-secondary btn-sm"><i className="bi bi-signpost-split me-1" />오름 코스 추천 보기</Link>

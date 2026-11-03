@@ -38,7 +38,7 @@ export async function rankOreums({ windSpeed = 4, windDir = 0, keyword = '', are
       const e = (dx * fx + dz * fz) / (Math.hypot(dx, dz) + 0.001); // +1 에 가까울수록 한라산 기준 바람이 불어오는 쪽
       const feel = Number(windSpeed) * (1 + Math.min(o.height ?? 0, 500) / 700) * (e > 0.35 ? 1.2 : e < -0.35 ? 0.8 : 1);
       return {
-        name: o.title, addr: o.addr, height_m: o.height, summit_wind_ms: Math.round(feel * 10) / 10,
+        id: o.id, name: o.title, addr: o.addr, height_m: o.height, summit_wind_ms: Math.round(feel * 10) / 10,
         side: e > 0.35 ? '바람 맞는 쪽' : e < -0.35 ? '바람 비낀 쪽' : '바람이 비스듬히 지나는 쪽',
         verdict: feel < 5 ? '오르기 좋아요' : feel < 9 ? '바람 적당' : '바람 조심',
         lat: o.lat, lng: o.lng, desc: o.desc,
