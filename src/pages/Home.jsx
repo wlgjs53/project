@@ -14,7 +14,6 @@ import PlaceList from '../components/PlaceList'
 import NearbyPanel from '../components/NearbyPanel'
 import ScrollCue from '../components/ScrollCue'
 import PlaceDetailPanel from '../components/PlaceDetailPanel'
-import { useWindSound } from '../hooks/useWindSound'
 import { useLiveWind } from '../hooks/useLiveWind'
 import { useNearby } from '../hooks/useNearby'
 import YeongdeungIntro from '../components/YeongdeungIntro'
@@ -49,7 +48,6 @@ function visibleCardOnRight() {
 // 홈 = 영등할망의 바람길 (스크롤하면 3D 제주 위를 날아가는 스토리)
 export default function Home() {
   const [wind, setWind] = useState({ speed: 11, dir: 315 })
-  const sound = useWindSound(wind)
   // 좁은 화면: 스크롤을 내리면 위쪽의 버튼·풍속 표시를 감춰 카드 글자를 가리지 않게 한다 (맨 위로 올리면 다시 보임)
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
@@ -187,9 +185,6 @@ export default function Home() {
         </button>
         <button type="button" className={`w-btn${oreumOn ? ' on' : ''}`} onClick={() => setOreumOn((v) => !v)} title="오름 표시 (제주오름요약설명 90곳)">
           <i className="bi bi-triangle me-1" />오름
-        </button>
-        <button type="button" className={`w-btn${sound.on ? ' on' : ''}`} onClick={sound.toggle}>
-          <i className="bi bi-wind me-1" />바람소리 {sound.on ? '끄기' : '켜기'}
         </button>
       </div>
 

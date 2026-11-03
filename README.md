@@ -41,7 +41,7 @@
 | **내 즐겨찾기** (`/my`) | 담아 둔 곳을 명소·오름·맛집·국가유산으로 묶어 보여 주고(오늘 바람 기준 "바람 맞는 쪽/비낀 쪽" 표시), **"오늘 코스 만들기"**에서 코스에 넣을 곳을 고르면(최대 6곳) 오늘의 바람·비에 맞는 순서·시간·지도 경로·길안내로 코스를 만들어 줍니다. 선택 삭제·전체 삭제(확인 한 번 더) 지원. 마지막으로 만든 코스는 홈 3D 지도의 **"동선 안내"**에서 지형 위에 경로선·번호로 이어서 볼 수 있고, 영등 여정(한수리→칠머리당→우도) 동선도 볼 수 있습니다. |
 | **오늘의 날씨** (비 정보) | 기상청 예보의 강수확률·강수형태·시간당 강수량을 오름 페이지, 장소 상세, 사이드바 날씨 카드(앞으로 6시간 강수확률), 홈 풍속 표시, 코스 요약·시간대 막대, AI 답변에 함께 보여 줍니다. 비 올 가능성이 높으면 우산·실내 대안을 권합니다. |
 | **영등할망 굿즈샵** (`/shop`, 모의 결제 데모) | IP를 상품으로 확장해 본 데모입니다. 영등할망 키링·테왁 키링·인형·마그넷·스티커 6종(직접 그린 SVG **시안**, 가격은 임의)을 장바구니(헤더 오른쪽 위 🛍 아이콘, 새로고침해도 유지)에 담고 **모의 결제**(결제 수단만 고름 — 카드번호·주소 등 개인정보는 받지 않음)하면 주문 완료 화면이 나오고, 주문 내역(닉네임·상품·합계·결제 수단 이름)이 **Supabase `orders` 표**에 저장되어 "내 주문 내역"으로 다시 조회됩니다. 실제 결제·배송은 없습니다. |
-| D-day · 바람소리 | 다음 음력 2월 초하루까지 남은 날, 풍속에 따라 변하는 바람소리. |
+| D-day | 다음 음력 2월 초하루까지 남은 날. |
 
 ## 3. 사용한 공공데이터 API
 
@@ -98,7 +98,7 @@ scripts/    build-dem.mjs(고도 데이터 변환), dev-local.mjs(로컬 개발 
 src/
   pages/        Home(3D 스토리) · Places · Heritage · Oreum · Course(추천 코스) · My(즐겨찾기+코스 만들기) · Agent · Check(개발용 동작 체크)
   components/   WindScene · StorySection · NearbyPanel · PlaceDetailPanel · HeritageModal · ItemCard · FavStar · BasketLayout · WeatherCard · CourseResult · RouteMap …
-  hooks/        useNearby · useLiveWind · useWindSound · useWindForecast · useOreums · useAutoPool · useCourseRoute …
+  hooks/        useNearby · useLiveWind · useWindForecast · useOreums · useAutoPool · useCourseRoute …
   lib/          terrain(지형) · windField(바람장) · advice(바람 기준 추천) · course(코스 계산) · wind(비 해석) · oreumPhoto · nav(카카오맵 링크) · geo · dday · supabase
   data/         story(영등 여정·프리셋) · jejuDem(고도 데이터) · sampleNearby(API 실패 시 자리표시)
   store/        Zustand 전역 상태 (닉네임·알림·즐겨찾기·에이전트 대화)
@@ -125,7 +125,7 @@ src/
 - **라우팅 (React Router 7)**: `createBrowserRouter`로 주소별 페이지를 한 곳(`src/router.jsx`)에서 관리하고, 메뉴(홈 · 영등굿·유산 · 명소·맛집 · 바람따라 오름 · 할망따라 · 내 즐겨찾기 · 영등할망 가이드)도 같은 파일의 `NAV_ITEMS`에서 만듭니다. 공통 틀 `RootLayout`(메뉴·푸터·알림)에 `<Outlet />`으로 페이지가 들어가며, 없는 주소는 `errorElement`(NotFound)로 처리합니다. 홈은 전체 화면 3D라 컨테이너·푸터 없이 그립니다. 주소: `/` `/places` `/heritage` `/agent` `/my` `/oreum`(바람따라 오름) `/course`(할망따라) `/check`(개발용 동작 체크).
 - **컴포넌트 재사용**: `ItemCard` 하나로 명소·국가유산·즐겨찾기 카드를 모두 그리고(사진 깨짐 대체, "자세히 보기"·"즐겨찾기" 버튼 지원), `Status`(Loading·ErrorAlert·Empty)와 `PageHeader`를 여러 페이지가 함께 씁니다. 3D 홈은 `StorySection` `StoryPhoto` `WindMeter` `WindControls` `PlaceList` `NearbyPanel` `PlaceDetailPanel` 등으로 쪼갰습니다.
 - **상태 구분**: 한 페이지 안에서만 쓰는 값(검색어·결과·로딩·에러, 홈의 풍속·선택한 장소·패널 열림)은 `useState`, 여러 페이지가 함께 보는 값은 **Zustand**(`src/store/useAppStore.js`)에 둡니다 — 닉네임(`persist`로 localStorage에 저장), 알림(토스트), 즐겨찾기, 에이전트 대화.
-- **커스텀 훅**: `useNearby`(주변 명소·맛집 불러오기와 실패 시 대체), `useLiveWind`(실시간 바람), `useWindSound`(바람소리).
+- **커스텀 훅**: `useNearby`(주변 명소·맛집 불러오기와 실패 시 대체), `useLiveWind`(실시간 바람).
 - **디자인**: Bootstrap 5.3 + Bootswatch **darkly** 테마 + react-bootstrap(Navbar·Card·Modal·Offcanvas·Toast) + Bootstrap Icons. 홈의 3D 화면 전용 스타일은 `w-` 접두사로 분리(`src/styles/wind.css`)하고, 모바일(720px 이하)용 배치도 따로 있습니다.
 
 ### 6-3. three.js (3D 지도)
@@ -183,7 +183,6 @@ src/
 
 ### 6-7. 그 밖에 사용한 브라우저·표준 기능
 
-- **Web Audio API**: 브라운 노이즈 + 밴드패스 필터로 바람소리를 만들고 풍속에 따라 음량·음색을 바꿈
 - **`Intl.DateTimeFormat`(중국력 옵션)**: 음력 날짜로 "다음 영등(음력 2월 초하루)까지 D-day" 계산
 - **Pointer Events · `ResizeObserver` · `requestAnimationFrame`**: 3D 조작과 스크롤 카메라
 - **localStorage**: Zustand `persist`로 닉네임 유지
