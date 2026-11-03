@@ -7,12 +7,12 @@ import { useAppStore } from '../store/useAppStore'
 import { GOODS, goodsById, won } from '../data/goods'
 
 const METHODS = [
-  { key: '카드(모의)', icon: 'credit-card', desc: '카드 정보는 입력하지 않아요' },
-  { key: '간편결제(모의)', icon: 'phone', desc: '실제 결제 앱으로 이동하지 않아요' },
-  { key: '무통장입금(모의)', icon: 'bank', desc: '실제 계좌는 없어요' },
+  { key: '카드', icon: 'credit-card', desc: '신용·체크카드' },
+  { key: '간편결제', icon: 'phone', desc: '간편결제 앱' },
+  { key: '무통장입금', icon: 'bank', desc: '계좌 이체' },
 ]
 
-// 영등할망 굿즈샵 — IP를 상품으로 확장해 본 "모의 결제" 데모. 실제 결제·배송·개인정보 수집은 없다.
+// 영등할망 굿즈샵 — IP를 상품으로 확장해 본 가상 상점(과제용). 실제 결제·배송·개인정보 수집은 없다.
 export default function Shop() {
   const { cart, addToCart, setQty, removeFromCart, placeOrder, orders, ordersLoading, loadOrders, nickname } = useAppStore()
   const [checkout, setCheckout] = useState(false)
@@ -35,11 +35,7 @@ export default function Shop() {
 
   return (
     <>
-      <PageHeader icon="bag-heart" title="영등할망 굿즈샵" subtitle="바람의 신 영등할망 이야기를 상품으로 — 굿즈를 담고 모의 결제까지 해 보는 데모" />
-      <div className="demo-banner mb-4">
-        <i className="bi bi-info-circle me-1" /><b>데모입니다.</b> 아래 굿즈는 상상으로 만든 <b>시안</b>이고, 실제 결제·배송·개인정보 수집은 이루어지지 않아요. 주문 내역만 Supabase에 저장돼요.
-      </div>
-
+      <PageHeader icon="bag-heart" title="영등할망 굿즈샵" subtitle="바람의 신 영등할망 이야기를 담은 굿즈 — 마음에 드는 굿즈를 담아 주문해 보세요" />
       <Row className="g-4">
         <Col lg={8}>
           <Row xs={1} sm={2} xl={3} className="g-3">
@@ -64,9 +60,9 @@ export default function Shop() {
           </Row>
 
           <section className="mt-5">
-            <h5 className="fw-bold mb-3"><i className="bi bi-receipt me-2 text-primary" />내 주문 내역 <small className="text-muted fw-normal">{nickname || '익명'} · Supabase 저장</small></h5>
+            <h5 className="fw-bold mb-3"><i className="bi bi-receipt me-2 text-primary" />내 주문 내역 <small className="text-muted fw-normal">{nickname || '익명'}</small></h5>
             {ordersLoading ? <div className="text-muted small">불러오는 중…</div> : orders.length === 0 ? (
-              <Empty text="아직 주문이 없어요. 굿즈를 담고 모의 결제를 해 보세요" />
+              <Empty text="아직 주문이 없어요. 굿즈를 담고 주문해 보세요" />
             ) : (
               <div className="d-flex flex-column gap-2">
                 {orders.map((o) => (
@@ -76,7 +72,7 @@ export default function Shop() {
                       <span className="text-muted small">{new Date(o.created_at).toLocaleString('ko-KR')} · {o.method}</span>
                     </div>
                     <div className="small text-muted mt-1">{o.items.map((i) => `${i.name} × ${i.qty}`).join(', ')}</div>
-                    <div className="fw-bold mt-1">{won(o.total)} <Badge bg="secondary" className="fw-normal ms-1">모의 결제 완료</Badge></div>
+                    <div className="fw-bold mt-1">{won(o.total)} <Badge bg="secondary" className="fw-normal ms-1">결제 완료</Badge></div>
                   </div>
                 ))}
               </div>
@@ -109,18 +105,19 @@ export default function Shop() {
                 <div className="d-flex justify-content-between align-items-baseline mt-3 mb-2">
                   <span className="text-muted">합계</span><b className="fs-5">{won(total)}</b>
                 </div>
-                <Button className="w-100" onClick={() => setCheckout(true)}><i className="bi bi-credit-card me-1" />모의 결제하기</Button>
+                <Button className="w-100" onClick={() => setCheckout(true)}><i className="bi bi-credit-card me-1" />결제하기</Button>
               </>
             )}
           </aside>
         </Col>
       </Row>
 
-      {/* 모의 결제 창 */}
+      <p className="small text-muted text-center mt-5 mb-0">※ 제주 문화 IP 과제 프로젝트의 가상 상점이에요. 상품은 시안이며 실제 결제·배송은 이루어지지 않아요.</p>
+
+      {/* 결제 창 */}
       <Modal show={checkout} onHide={() => !paying && setCheckout(false)} centered>
-        <Modal.Header closeButton={!paying}><Modal.Title className="fs-5">모의 결제</Modal.Title></Modal.Header>
+        <Modal.Header closeButton={!paying}><Modal.Title className="fs-5">결제</Modal.Title></Modal.Header>
         <Modal.Body>
-          <div className="demo-banner mb-3">데모 결제예요. <b>카드번호·주소 등 개인정보는 받지 않고</b>, 실제로 돈이 빠져나가지 않아요.</div>
           <div className="mb-3">
             {lines.map((l) => <div key={l.id} className="d-flex justify-content-between small"><span>{l.g.name} × {l.qty}</span><span>{won(l.g.price * l.qty)}</span></div>)}
             <hr />
@@ -139,7 +136,7 @@ export default function Shop() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" disabled={paying} onClick={() => setCheckout(false)}>취소</Button>
-          <Button disabled={paying || !lines.length} onClick={pay}>{paying ? '결제 처리 중…' : `${won(total)} 모의 결제 완료`}</Button>
+          <Button disabled={paying || !lines.length} onClick={pay}>{paying ? '결제 처리 중…' : `${won(total)} 결제하기`}</Button>
         </Modal.Footer>
       </Modal>
 
@@ -147,7 +144,7 @@ export default function Shop() {
       <Modal show={!!done} onHide={() => setDone(null)} centered>
         <Modal.Body className="text-center py-4">
           <div className="fs-1 mb-2">🎉</div>
-          <h5 className="fw-bold">주문이 완료됐어요 (모의)</h5>
+          <h5 className="fw-bold">주문이 완료됐어요</h5>
           {done && (
             <>
               <div className="text-muted mb-3">주문번호 <b>YD-{String(done.id).padStart(5, '0')}</b> · {done.method}</div>
@@ -156,7 +153,7 @@ export default function Shop() {
                 <hr className="my-2" />
                 <div className="d-flex justify-content-between fw-bold"><span>합계</span><span>{won(done.total)}</span></div>
               </div>
-              <div className="small text-muted mb-3">실제 결제·배송은 이루어지지 않았어요. 주문 내역은 Supabase에 저장되어 아래 "내 주문 내역"에서 볼 수 있어요.</div>
+              <div className="small text-muted mb-3">주문 내역은 "내 주문 내역"에서 다시 볼 수 있어요.</div>
             </>
           )}
           <Button onClick={() => setDone(null)}>확인</Button>

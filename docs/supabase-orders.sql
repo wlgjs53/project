@@ -1,11 +1,11 @@
 -- 굿즈샵(모의 결제) 주문 저장용 표 — Supabase 의 SQL Editor 에 통째로 붙여 넣고 Run 하세요.
--- 실제 결제·배송은 없고, 주문 내역(닉네임·상품·합계·결제 수단 이름)만 저장합니다. 카드번호·주소는 저장하지 않습니다.
+-- (가상 상점) 실제 결제·배송은 없고, 주문 내역(닉네임·상품·합계·결제 수단 이름)만 저장합니다. 카드번호·주소는 저장하지 않습니다.
 create table if not exists orders (
   id bigint generated always as identity primary key,
   nickname text not null,          -- 오른쪽 위에서 정한 닉네임 (없으면 '익명')
   items jsonb not null,            -- [{ id, name, price, qty }]
   total integer not null,          -- 합계(원)
-  method text not null,            -- '카드(모의)' | '간편결제(모의)' | '무통장입금(모의)'
+  method text not null,            -- '카드' | '간편결제' | '무통장입금'
   created_at timestamptz default now()
 );
 
