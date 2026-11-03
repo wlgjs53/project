@@ -88,7 +88,12 @@ export const useAppStore = create(
       chatLoading: false,
       clearMessages: () => set({ messages: [] }),   // 새 대화로 시작 (크레딧도 아낄 수 있다)
       sendMessage: async (text) => {
-        const history = get().messages.filter((m) => !m.error).map((m) => ({ role: m.role, content: m.text }))  // Claude 형식 (오류 안내문은 보내지 않는다)
+        // Claude 형식. 오류 안내문은 보내지 않고, 도구를 쓴 답변에는 "어떤 도구로 만든 답인지" 메모를 붙인다
+        // (대화 기록에는 도구 호출 자체가 빠져 있어서, 메모가 없으면 모델이 이전 답변을 "확인 없이 한 말"로 오해해 스스로 번복한다)
+        const history = get().messages.filter((m) => !m.error).map((m) => {
+          const tools = [...new Set((m.steps ?? []).map((s) => s.tool))]
+          return { role: m.role, content: m.role === 'assistant' && tools.length ? `${m.text}\n\n(내부 메모: 이 답변은 ${tools.join(', ')} 도구의 결과로 작성함)` : m.text }
+        })
         set({ messages: [...get().messages, { role: 'user', text }], chatLoading: true })
         try {
           const { answer, steps, cards } = await askAgent(text, history)
