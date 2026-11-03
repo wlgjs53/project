@@ -252,6 +252,18 @@ create unique index favorites_unique on favorites (nickname, source, item_id);  
 
 위 정책은 **실습용(누구나 읽고 쓰고 지우기)**입니다. 닉네임은 로그인이 아니라서 다른 사람의 즐겨찾기를 지울 수도 있으므로, 실제 서비스에서는 Supabase Auth로 로그인한 사용자만 자신의 행을 읽고 쓰고 지우도록 바꿔야 합니다.
 
+## 7-1. 링크 미리보기(OG) · QR 코드 · 홈 화면에 앱 추가
+
+| 항목 | 구현 | 파일 |
+|---|---|---|
+| **QR 코드** | 배포 주소(`https://project-red-gamma-91.vercel.app`)를 가리키는 QR. `node scripts/make-qr.mjs`로 다시 만들 수 있고, 배포 후 `/images/qr.png`로도 열립니다. | `public/images/qr.png` · `scripts/make-qr.mjs` |
+| **OG(링크 미리보기)** | `index.html`에 `og:title` `og:description` `og:image`(1200×630) `og:url` 등을 넣어 카카오톡·메신저·SNS에 주소를 붙이면 제목·설명·이미지가 보입니다. 아이폰용 `apple-touch-icon`(180×180)도 함께 지정했습니다. | `index.html` · `public/images/og.png` · `public/images/icon-180.png` |
+| **홈 화면에 앱 추가** | `manifest.webmanifest`(이름 "영등할망의 바람길", 짧은 이름 "바람길", 192·512 아이콘, `display: standalone`, `start_url`·`scope` `/`)와 `favicon`·`theme-color`를 지정했습니다. 안드로이드(Chrome 메뉴 → 홈 화면에 추가)와 아이폰(Safari 공유 → 홈 화면에 추가)에서 앱처럼 실행됩니다. | `public/manifest.webmanifest` · `public/favicon.svg` · `public/images/icon-*.png` |
+
+이미지는 `scripts/brand/`의 SVG·HTML을 Chrome 헤드리스로 캡처해 만들었습니다(로고: 바람 소용돌이 + 영등의 금빛 점).
+
+![배포 주소 QR 코드](public/images/qr.png)
+
 ## 8. 출처 · 저작권 · 유의사항
 
 - **한국관광공사 TourAPI**: 장소 정보·사진은 한국관광공사 자료이며, 사진마다 공공누리 유형(예: 제3유형 — 출처표시·변경금지)이 다르므로 화면에 출처와 유형을 표기합니다. 사진은 가공하지 않고 잘라서 보여 주기만 합니다.

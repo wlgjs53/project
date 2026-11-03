@@ -1,0 +1,16 @@
+{
+  "name": "영등할망의 바람길",
+  "short_name": "바람길",
+  "description": "오늘의 바람과 비를 따라 걷는 제주 — 3D 바람길, 오름, 하루 코스, AI 가이드",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07121f",
+  "theme_color": "#0b2a40",
+  "icons": [
+    { "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
