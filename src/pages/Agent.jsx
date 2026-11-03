@@ -102,13 +102,13 @@ function PlaceCards({ cards }) {
   )
 }
 
-function Message({ m }) {
+function Message({ m, showSteps }) {
   if (m.role === 'user') return <div className="msg user">{m.text}</div>
   return (
     <div className="msg-row">
       <span className="agent-avatar"><i className="bi bi-wind" /></span>
       <div className={`msg assistant${m.error ? ' error' : ''}`}>
-        {m.steps?.length > 0 && <ToolSteps steps={m.steps} />}
+        {showSteps && m.steps?.length > 0 && <ToolSteps steps={m.steps} />}
         {m.error && <i className="bi bi-exclamation-triangle me-1" />}
         <RichText text={m.text} />
         {m.cards?.length > 0 && <PlaceCards cards={m.cards} />}
@@ -124,6 +124,9 @@ export default function Agent() {
   const clearMessages = useAppStore((s) => s.clearMessages)
   const [input, setInput] = useState('')
   const endRef = useRef(null)
+  // 사용한 도구·호출 내역은 손님에게는 필요 없어서 기본으로 숨기고, 아래 스위치로 켤 수 있다(평가·시연 때 "호출 내역"을 보여 주기 위함). 선택은 브라우저에 기억한다.
+  const [showSteps, setShowSteps] = useState(() => { try { return localStorage.getItem('agent-show-steps') === '1' } catch { return false } })
+  const toggleSteps = () => setShowSteps((v) => { const next = !v; try { localStorage.setItem('agent-show-steps', next ? '1' : '0') } catch { /* 저장 못 해도 동작에는 문제 없음 */ } return next })
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [messages, loading])
 
@@ -158,7 +161,7 @@ export default function Agent() {
             </div>
           </div>
         )}
-        {messages.map((m, i) => <Message key={i} m={m} />)}
+        {messages.map((m, i) => <Message key={i} m={m} showSteps={showSteps} />)}
         {loading && (
           <div className="msg-row">
             <span className="agent-avatar"><i className="bi bi-wind" /></span>
@@ -172,11 +175,12 @@ export default function Agent() {
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="무엇이든 물어보세요 (예: 오늘 비 오는데 갈 만한 곳)" disabled={loading} />
         <button type="submit" disabled={loading || !input.trim()} aria-label="보내기"><i className="bi bi-send-fill" /></button>
       </form>
-      {messages.length > 0 && (
-        <div className="text-end mt-2">
-          <button type="button" className="agent-clear" disabled={loading} onClick={clearMessages}><i className="bi bi-arrow-counterclockwise me-1" />새 대화</button>
-        </div>
-      )}
+      <div className="d-flex justify-content-between align-items-center mt-2">
+        <label className="agent-dev" title="에이전트가 어떤 도구를 몇 번 호출했는지 답변 위에 보여 줍니다 (개발·평가용)">
+          <input type="checkbox" checked={showSteps} onChange={toggleSteps} /> 호출 내역 보기 <small>(개발자용)</small>
+        </label>
+        {messages.length > 0 && <button type="button" className="agent-clear" disabled={loading} onClick={clearMessages}><i className="bi bi-arrow-counterclockwise me-1" />새 대화</button>}
+      </div>
     </>
   )
 }

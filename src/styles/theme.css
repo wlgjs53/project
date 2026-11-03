@@ -204,3 +204,7 @@ body { font-family: 'Pretendard', system-ui, sans-serif; background: #050b14; }
 .qty span { min-width: 22px; text-align: center; font-size: 13px; }
 .pay-option { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--bs-border-color); border-radius: 12px; cursor: pointer; }
 .pay-option.on { border-color: #7fe3d6; background: rgba(127, 227, 214, .1); }
+
+.agent-dev { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--bs-secondary-color); opacity: .7; cursor: pointer; }
+.agent-dev:hover { opacity: 1; }
+.agent-dev small { opacity: .7; }
